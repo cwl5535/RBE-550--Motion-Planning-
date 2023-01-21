@@ -36,11 +36,11 @@ def show_obstacle_field(environment):
 
 
 
-def create_obstacle_field(environment, goal):
+def create_obstacle_field(environment, goal_coverage):
     coverage = 0
     new_env = add_tetromino(environment)
 
-    while coverage < goal: 
+    while coverage < goal_coverage: 
         new_env = add_tetromino(new_env)
         coverage = check_coverage(new_env)
     cov_print = round(coverage * 100)
@@ -57,9 +57,9 @@ if __name__ == "__main__":
     grid_size = 128
 
 
-    obstacle_field_1, coverage_1 = create_obstacle_field(np.zeros((grid_size, grid_size)), goal = 0.1)
-    obstacle_field_2, coverage_2 = create_obstacle_field(np.zeros((grid_size, grid_size)), goal = 0.5)
-    obstacle_field_3, coverage_3 = create_obstacle_field(np.zeros((grid_size, grid_size)), goal = 0.7)
+    obstacle_field_1, coverage_1 = create_obstacle_field(np.zeros((grid_size, grid_size)), goal_coverage = 0.1)
+    obstacle_field_2, coverage_2 = create_obstacle_field(np.zeros((grid_size, grid_size)), goal_coverage = 0.5)
+    obstacle_field_3, coverage_3 = create_obstacle_field(np.zeros((grid_size, grid_size)), goal_coverage = 0.7)
 
     plt.figure("Assignment 0 (RBE 550): Creating Obstacle Fields")
     plt.subplot(2, 3, (1,4)), plt.imshow(obstacle_field_1, cmap = "binary"), plt.title(f"{round(coverage_1 * 100)} % Coverage")
