@@ -1,11 +1,11 @@
 import turtle
 
-# initialize Screen and Turtle for drawing
-s = turtle.Screen()
-t = turtle.Turtle()
-
-# Change title of Window
-s.title("Assignment 0 (RBE 550): Setting up Python")
+"""
+Author: Colton Layhue
+Assignment 0 - RBE 550 Motion Planning - Create Turtle Pattern
+Worcester Polytechnic Institute
+Spring 2023
+"""
 
 # Move turtle
 def reorient(t): 
@@ -35,6 +35,14 @@ def main(t):
         x += 1
 
 if __name__ == "__main__":
+    
+    # initialize Screen and Turtle for drawing
+    s = turtle.Screen()
+    t = turtle.Turtle()
+
+    # Change title of Window
+    s.title("Assignment 0 (RBE 550): Setting up Python")
+
     main(t)
     turtle.done()  # needed at the end of every turtle program
 
