@@ -1,16 +1,33 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import random
-import cv2 as cv
+
+"""
+Author: Colton Layhue
+Assignment 0 - RBE 550 Motion Planning - Create Obstacle Field
+Worcester Polytechnic Institute
+Spring 2023
+"""
 
 def add_tetromino(environment): 
+    '''
+    Arguments: 
+        environment - `numpy array`, environment to add obstacle to. 
+    Description: function to add tetronimo to given environment
+    '''
 
+    # random number used to find a position in the environment to place tetromino
     random_row = random.randint(0, environment.shape[0])  
     random_col = random.randint(0, environment.shape[1])
     random_tetromino = tetrominoes[random.randint(0, len(tetrominoes)-1)]
     tetromino_height = random_tetromino.shape[0]
     tetromino_width = random_tetromino.shape[1]
 
+
+    '''
+    Different coordinates of where to place tetromino are given based on quadrant within obstacle field.
+    Coordinates allow for all pieces, regardless of size, are able to be placed successfully. 
+    '''
     if (random_row < (environment.shape[0]//2)) and (random_col < (environment.shape[1]//2)): # Quadrant 1
          environment[random_row : (random_row + tetromino_height), random_col : (random_col + tetromino_width)] = random_tetromino
     
@@ -26,17 +43,35 @@ def add_tetromino(environment):
     return environment
 
 def check_coverage(environment): 
+    """
+    Arguments: 
+        environment - `numpy array`, environment that contains obstacles to be counted
+    Description: Function to check overage coverage of tetrominos in a given environment. 
+    Note: since only 1s or 0s are used, `np.count_nonzero` can be used to count the number of occupied spaces
+    """
     occurrence_count = np.count_nonzero(environment)
     coverage = occurrence_count/(environment.size)
     return coverage
 
 def show_obstacle_field(environment):
+    '''
+    Arguments: 
+        environment - `numpy array`, desired environment to be shown
+    Description: Function to show a given obstacle field
+    '''
     plt.imshow(environment, cmap = "binary")
     plt.show()
 
 
 
 def create_obstacle_field(environment, goal_coverage):
+
+    """
+    Arguments: 
+        environment - `numpy array` , initial environment to create obstacle field onto. 
+        goal_coverage - `float` , decimal value of desired coverage for obstacle field i.e. 0.7 means 70%. 
+    Description: 
+    """
     coverage = 0
     new_env = add_tetromino(environment)
 
