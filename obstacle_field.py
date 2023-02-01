@@ -9,7 +9,7 @@ Worcester Polytechnic Institute
 Spring 2023
 """
 
-def add_tetromino(environment): 
+def add_tetromino(environment, tetrominoes): 
     '''
     Arguments: 
         environment - `numpy array`, environment to add obstacle to. 
@@ -72,11 +72,17 @@ def create_obstacle_field(environment, goal_coverage):
         goal_coverage - `float` , decimal value of desired coverage for obstacle field i.e. 0.7 means 70%. 
     Description: 
     """
+
+    tetrominoes = [np.ones((4,1)), 
+               np.array([[1,1],[0,1],[0,1]]), 
+               np.array([[1,0],[1,1],[0,1]]),
+               np.array([[0,1],[1,1],[0,1]])]
+
     coverage = 0
-    new_env = add_tetromino(environment)
+    new_env = add_tetromino(environment, tetrominoes)
 
     while coverage < goal_coverage: 
-        new_env = add_tetromino(new_env)
+        new_env = add_tetromino(new_env, tetrominoes)
         coverage = check_coverage(new_env)
     cov_print = round(coverage * 100)
 
