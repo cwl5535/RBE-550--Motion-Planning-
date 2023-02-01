@@ -9,12 +9,15 @@ Worcester Polytechnic Institute
 Spring 2023
 """
 
+ 
+
 def add_tetromino(environment, tetrominoes): 
     '''
     Arguments: 
         environment - `numpy array`, environment to add obstacle to. 
     Description: function to add tetronimo to given environment
     '''
+# TODO: Find way to add tetrominoes without adding zeros. Adding zeros destroys preestablished borders such as the one for assignment 2
 
     # random number used to find a position in the environment to place tetromino
     random_row = random.randint(0, environment.shape[0])  
