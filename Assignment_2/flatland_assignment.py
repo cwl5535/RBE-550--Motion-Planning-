@@ -50,13 +50,13 @@ def place_robot(starting_quadrant, obstacle_field):
             continue   # see https://stackoverflow.com/questions/653509/breaking-out-of-nested-loops
         break
     
-    return row, col
+    obstacle_field[row, col] = np.nan # making the robot a value that isn't 0 or 1 for a different color
+    return row, col, obstacle_field
 
 
 if __name__ == "__main__":
-    starting_row, starting_col = place_robot("NW", init_env)
+    starting_row, starting_col, init_env = place_robot("NW", init_env)
 
-    init_env[starting_row, starting_col] = np.nan  # making the robot a value that isn't 0 or 1 for a different color
     # Displaying the environment
 
     plt.figure("Assignment 2: Flatland Assignment")
