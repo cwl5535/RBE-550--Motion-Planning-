@@ -9,6 +9,7 @@ np.set_printoptions(threshold=sys.maxsize)
 
 # Initial Environment with Closed Border
 grid_size = 128
+color_value_for_path = 0.5
 
 init_env = np.zeros((grid_size, grid_size))
 
@@ -21,9 +22,12 @@ obstacle_field, coverage = create_obstacle_field(np.zeros(((grid_size-2),(grid_s
 # Adding the obstacles to the initial environment
 init_env[1:(grid_size-1), 1:(grid_size-1)] = obstacle_field
 
-def collision_check(direction): 
-    if direction == "W": 
-        pass
+
+def collision_check(cell_value): 
+    if (cell_value == 1) or (cell_value == color_value_for_path):
+        return True
+def move():
+    pass
 
 def place_robot(starting_quadrant, obstacle_field):
     
@@ -53,6 +57,39 @@ def place_robot(starting_quadrant, obstacle_field):
     return row, col
 
 
+class Robot(object): 
+    def __init__(self, starting_location: tuple): 
+        self.starting_location = starting_location  # tuple
+        self.previous_location = None
+
+def check_surroundings(environment, current_location: tuple):
+    row = current_location[0]
+    col = current_location[1] 
+
+    surroundings = [environment[row-1, col-1], environment[row-1, col], environment[row-1, col+1],
+                    environment[row,   col-1],                          environment[row,   col+1], 
+                    environment[row+1, col-1], environment[row+1, col], environment[row+1, col+1] ] 
+
+    for value in surroundings:
+        if value == 0:
+            value = color_value_for_path
+    
+    environment[(row-1):(col-1), (row+1):(col+1)] = surroundings
+
+    updated_env = environment
+    return updated_env
+    
+
+
+
+
+
+def breadth_first(current_location, goal_location, environment): 
+    while current_location != goal_location: 
+        # check our surroundings, get a list of eligible locations, change them all to yellow, 
+        env = check_surroundings(environment = environment, current_location= current_location)
+
+
 if __name__ == "__main__":
     starting_row, starting_col = place_robot("NW", init_env)
 
@@ -62,7 +99,7 @@ if __name__ == "__main__":
     plt.figure("Assignment 2: Flatland Assignment")
 
 
-    cmap = ListedColormap(["white", "black"]) # sets 0 as white, 1 as black. See https://stackoverflow.com/questions/68390704/assign-specific-colors-to-values-of-an-array-when-plotting-it-using-imshow-witho
+    cmap = ListedColormap(["white", "yellow", "black"]) # sets 0 as white, 1 as black. See https://stackoverflow.com/questions/68390704/assign-specific-colors-to-values-of-an-array-when-plotting-it-using-imshow-witho
     cmap.set_bad("red")   # sets value that's not 0 or 1 to red. In this case it's np.nan. 
 
     plt.imshow(init_env, cmap=cmap)
