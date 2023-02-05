@@ -4,25 +4,6 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 import sys
 
-np.set_printoptions(threshold=sys.maxsize)
-
-
-# Initial Environment with Closed Border
-grid_size = 128
-color_value_for_path = 0.5
-
-init_env = np.zeros((grid_size, grid_size))
-
-# Adding the borders
-init_env[0, 0:grid_size], init_env[1:grid_size-1, 0], init_env[1:(grid_size-1), (grid_size-1)], init_env[(grid_size-1), 0:grid_size] = 1,1,1,1
-
-# Generating the obstacles within the area NOT including the border
-obstacle_field, coverage = create_obstacle_field(np.zeros(((grid_size-2),(grid_size-2))), goal_coverage= 0.25)  # NOTE that size of environment given to create_obstacle_field is only the area that doesn't include the border from the init_env
-
-# Adding the obstacles to the initial environment
-init_env[1:(grid_size-1), 1:(grid_size-1)] = obstacle_field
-
-
 def collision_check(cell_value): 
     if (cell_value == 1) or (cell_value == color_value_for_path):
         return True
@@ -54,7 +35,10 @@ def place_robot(starting_quadrant, obstacle_field):
             continue   # see https://stackoverflow.com/questions/653509/breaking-out-of-nested-loops
         break
     
-    return row, col
+    obstacle_field[row, col] = np.nan # making the robot a value that isn't 0 or 1 for a different color
+    return row, col, obstacle_field
+
+
 
 
 class Robot(object): 
@@ -66,34 +50,85 @@ def check_surroundings(environment, current_location: tuple):
     row = current_location[0]
     col = current_location[1] 
 
-    surroundings = [environment[row-1, col-1], environment[row-1, col], environment[row-1, col+1],
-                    environment[row,   col-1],                          environment[row,   col+1], 
-                    environment[row+1, col-1], environment[row+1, col], environment[row+1, col+1] ] 
+    nodes_to_explore = []
+    # surroundings = environment[row-1: col-1 , row+1 : col+1]
 
-    for value in surroundings:
+    surroundings = {(row-1, col-1): environment[row-1, col-1],    (row-1, col): environment[row-1, col],     (row-1, col+1): environment[row-1, col+1],
+                    (row,   col-1): environment[row,   col-1],                                               (row,   col+1): environment[row,   col+1], 
+                    (row+1, col-1): environment[row+1, col-1],    (row+1, col): environment[row+1, col],     (row+1, col+1): environment[row+1, col+1] }
+
+    for key, value in surroundings.items():
         if value == 0:
-            value = color_value_for_path
+            nodes_to_explore.append(key)
     
-    environment[(row-1):(col-1), (row+1):(col+1)] = surroundings
+    # environment[(row-1):(col-1), (row+1):(col+1)] = surroundings
 
-    updated_env = environment
-    return updated_env
+    # updated_env = environment
+    return nodes_to_explore
     
 
 
 
+def explore_cell(location: tuple, environment):
+    environment[location[0], location[1]] = color_value_for_path
+    return environment
 
 
-def breadth_first(current_location, goal_location, environment): 
-    while current_location != goal_location: 
+def breadth_first(starting_location: tuple, goal_location: tuple, environment): 
+    print("Beginning Breadth First Search")
+    current_location = starting_location
+    while True: 
         # check our surroundings, get a list of eligible locations, change them all to yellow, 
-        env = check_surroundings(environment = environment, current_location= current_location)
-
-
+        eligible_nodes = check_surroundings(environment = environment, current_location= current_location)
+        for node in eligible_nodes:
+            new_env = explore_cell(node, environment)
+            environment = new_env
+            current_location = node
+            if current_location == goal_location:
+                break
+        else:
+            continue
+        break
+    
+    print("Goal location has been achieved!")
+    # environment[goal_location[0], goal_location[1]] = np.nan
+    # environment[starting_location[0], starting_location[1]] = color_value_for_path
+    return new_env
 if __name__ == "__main__":
-    starting_row, starting_col = place_robot("NW", init_env)
 
-    init_env[starting_row, starting_col] = np.nan  # making the robot a value that isn't 0 or 1 for a different color
+    np.set_printoptions(threshold=sys.maxsize)
+
+
+    # Initial Environment with Closed Border
+    grid_size = 128
+    color_value_for_path = 0.5
+    init_env = np.zeros((grid_size, grid_size))
+
+    # Adding the borders
+    init_env[0, 0:grid_size], init_env[1:grid_size-1, 0], init_env[1:(grid_size-1), (grid_size-1)], init_env[(grid_size-1), 0:grid_size] = 1,1,1,1
+
+    # Generating the obstacles within the area NOT including the border
+    obstacle_field, coverage = create_obstacle_field(np.zeros(((grid_size-2),(grid_size-2))), goal_coverage= 0.05)  # NOTE that size of environment given to create_obstacle_field is only the area that doesn't include the border from the init_env
+
+    # Adding the obstacles to the initial environment
+    init_env[1:(grid_size-1), 1:(grid_size-1)] = obstacle_field
+
+
+    # Placing the Robot
+    starting_row, starting_col, init_env = place_robot("NW", init_env)
+
+    # Performing Breadth First Search
+    goal_location = (120, 120)
+    init_env[goal_location[0], goal_location[1]] = 0  # create a goal area
+    final_env = breadth_first((starting_row, starting_col), goal_location=goal_location, environment=init_env)
+
+
+
+
+
+
+
+
     # Displaying the environment
 
     plt.figure("Assignment 2: Flatland Assignment")
@@ -102,7 +137,7 @@ if __name__ == "__main__":
     cmap = ListedColormap(["white", "yellow", "black"]) # sets 0 as white, 1 as black. See https://stackoverflow.com/questions/68390704/assign-specific-colors-to-values-of-an-array-when-plotting-it-using-imshow-witho
     cmap.set_bad("red")   # sets value that's not 0 or 1 to red. In this case it's np.nan. 
 
-    plt.imshow(init_env, cmap=cmap)
+    plt.imshow(final_env, cmap=cmap)
 
 
     plt.show()
