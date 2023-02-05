@@ -46,10 +46,7 @@ class Robot(object):
         self.starting_location = starting_location  # tuple
         self.previous_location = None
 
-def check_surroundings(environment, current_location: tuple):
-    row = current_location[0]
-    col = current_location[1] 
-
+def check_surroundings(environment, current_locations: list) -> list:
     nodes_to_explore = []
     # surroundings = environment[row-1: col-1 , row+1 : col+1]
 
