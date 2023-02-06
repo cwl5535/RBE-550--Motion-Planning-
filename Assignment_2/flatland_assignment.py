@@ -4,13 +4,29 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 import sys
 
-def place_robot(starting_quadrant, obstacle_field):
+"""
+Author: Colton Layhue
+Assignment 2 - RBE 550 Motion Planning - Forward Search Planners
+Worcester Polytechnic Institute
+Spring 2023
+"""
+
+def place_robot(starting_quadrant: str, obstacle_field):
+    """"
+    Purpose: This function finds an open spot in a given obstacle field to place the poitn robot. The location is based on the quadrant given to the function northwest (NW), northeast (NE), southwest (SW), or southeast (SE).
+    
+    Arguments: 
+        starting_quadrant: `string` - Quadrant to place robot in. Options include NW, NE, SW, SE
+        obstacle_field: `numpy array` - obstacle field to place robot in. 
+    """
     
     obs_field_height = obstacle_field.shape[0]
     obs_field_width = obstacle_field.shape[1]
 
 
     # cutting the environment up into 4 quadrants
+    # TODO: Fix other 3 quadrants
+
     if starting_quadrant == "NW":
         environment = obstacle_field[0:((obs_field_height//2)-1), 0:((obs_field_height//2)-1)]
     elif starting_quadrant == "NE":
@@ -35,8 +51,12 @@ def place_robot(starting_quadrant, obstacle_field):
 
 def check_surroundings_random_search(environment, current_locations) -> list:
     """
-    For BFS, it is necessary to check a list of locations as this is many nodes at the same level
-    For DFS, one node will always be checked
+    Purpose: To check the nodes in each of the 4 cardinal directions from the current node, Random Search Specific
+    
+    This function checks which nodes are available to be explored and appends it to a list of eligible nodes to explore. This list of eligible nodes is check with this same function. 
+   
+
+    Returns: `nodes_to_explore`: `list` - list of `tuples` to be explored by the robot.  
     """
     nodes_to_explore = []
     row = current_locations[0]
@@ -64,8 +84,12 @@ def check_surroundings_random_search(environment, current_locations) -> list:
 
 def check_surroundings_BFS(environment, current_locations: list) -> list:
     """
-    For BFS, it is necessary to check a list of locations as this is many nodes at the same level
-    For DFS, one node will always be checked
+    Purpose: To check the nodes in each of the 4 cardinal directions from the current node, Breadth First Search Specific
+    
+    This function checks which nodes are available to be explored and appends it to a list of eligible nodes to explore. This list of eligible nodes is check with this same function. 
+    Note: This breadth first specific function can handle a list of current locations, since breadth first will examine all notes at the same level before expanding. 
+
+    Returns: `nodes_to_explore`: `list` - list of `tuples` to be explored by the robot.  
     """
     nodes_to_explore = []
     for location in current_locations: 
@@ -82,7 +106,7 @@ def check_surroundings_BFS(environment, current_locations: list) -> list:
         
 
 
-        if (all(x!=0 for x in surroundings.values())):  # if all surrounding values have either been explored or are a wall, 
+        if (all(x!=0 for x in surroundings.values())):  # if all surrounding values have either been explored or are a wall, do not append any values to the nodes_to_explore list
             # print("No Possible nodes to explore. I am stuck :(")
             continue
         for key, value in surroundings.items():
@@ -94,6 +118,7 @@ def check_surroundings_BFS(environment, current_locations: list) -> list:
 
 def check_surroundings_DFS(environment, current_location: tuple, stack) -> list:
     """
+    Purpose: To check the nodes in each of the 4 cardinal directions from the current node, Depth First Search Specific
     DFS only does one node at a time
     Checks what nodes are available to be explored and adds it to the stack
     """
@@ -123,11 +148,40 @@ def check_surroundings_DFS(environment, current_location: tuple, stack) -> list:
 
 
 def explore_node(location: tuple, environment):
+    """
+    Purpose: function to enter node location and mark it as explored by changing its color and value to yellow and 0.5
+
+    Arugments: 
+        location: `tuple` - node coordinate to explore
+        environment: `np arrray` - obstacle field where node is located
+
+    Returns: 
+        environment: `np array` - updated obstacle field with node now marked as traveled upon
+    """
     environment[location[0], location[1]] = color_value_for_path  # marks path with yellow (0.5 used for value)
     return environment
 
 
-def explore_depth(starting_location: tuple, goal_location: tuple, environment, i, stack): 
+def explore_depth(starting_location: tuple, goal_location: tuple, environment, i: int, stack: list): 
+    """
+    Purpose: Separate explore function to enable recursion for Depth First Search. 
+
+    Description: 
+        This function utilizes the `check_surroundings_DFS` function to identify which nodes are able to be explored and then moves the robot to that point. After a node is explored, the next node is popped from the stack and explored. 
+        There are checks within the loops to see if the robot has achieved its goal, whether there are no points left to explore, and to handle any recursion errors. The recursion limit can be changed in the user input section. 
+
+    Arguments: 
+        starting_location: `tuple` - coordinates of where the robot is placed using `place_robot` function
+        goal_location: `tuple` - coordinates of where the robot should end
+        environment: `numpy array` - desired array or obstacle field for the robot to explore
+        i: `int` - used for keeping track of the number of interations needed
+        stack: `list` - list used to store a stack of what nodes to explore next. This enables the Last In, First Out of Depth first search
+    
+    Returns: 
+        environment: 
+        achieved: `bool` - Whether or not the robot reached its goal
+        i: `int` - number of iterations needed
+    """
     current_location = starting_location
     while True: 
         i += 1
@@ -154,6 +208,9 @@ def explore_depth(starting_location: tuple, goal_location: tuple, environment, i
     return environment, achieved, i
 
 def depth_first(starting_location: tuple, goal_location: tuple, environment):
+    """
+    Purpose: wrapper function for depth first search. This is the MAIN function to run to perform a depth first search. 
+    """
     print("Beginning Depth First Search!")
     print(f"Goal Location: {goal_location}")
     i = 0
@@ -168,6 +225,11 @@ def depth_first(starting_location: tuple, goal_location: tuple, environment):
 
 
 def breadth_first(starting_location: tuple, goal_location: tuple, environment): 
+    """
+    Purpose: Main function to run breath first search. 
+    Description: This function uses `check_surroundings_BFS` to identify nodes to move to, and cycles through them at each level. If all the nodes at a given level are explorerd, the remaining eligible nodes are assigned as the `current_locations` in the else loop so they can be run through the algorithm. 
+    Once there are no more possible nodes to move to, the algorithm will end. 
+    """
     print("Beginning Breadth First Search!")
     print(f"Goal Location: {goal_location}")
     current_locations = [starting_location]
@@ -203,6 +265,11 @@ def breadth_first(starting_location: tuple, goal_location: tuple, environment):
     
 
 def random_search(starting_location: tuple, goal_location: tuple, environment):
+    """
+    Purpose: Main function to run random search. 
+    Description: This function uses `check_surroundings_random_search` to identify nodes to move to, and moves to the first one available. 
+    """
+
     print("Beginning Random Search!")
     print(f"Goal Location: {goal_location}")
     current_location = starting_location
@@ -233,7 +300,8 @@ def random_search(starting_location: tuple, goal_location: tuple, environment):
 
 def dijkstras(starting_location: tuple, goal_location: tuple, environment):
     """
-    In this use case, the cost of each cell is assumed to be the same, causing the results to yield similar to BFS
+    Purpose: Main function to run dijkstras search. 
+    Note: In this use case, the cost of each cell is assumed to be the same, causing the results to yield similar to Breadth First Search
     """
     
     print("Beginning Dijkstra's Search!")
@@ -272,7 +340,13 @@ def dijkstras(starting_location: tuple, goal_location: tuple, environment):
 
 
 def create_bordered_env(coverage, grid_size):
+    """
+    Purpose: Create a bordered obstacle field
 
+    Arguments: 
+        coverage: `float` - decimal between 0 and 1 to determine the level of coverage for the obstacle field i.e. 0.7 = 70% coverage
+        grid_size: `int` - dimension of square grid to create
+    """
     init_env = np.zeros((grid_size, grid_size))
 
     # Adding the borders
@@ -289,15 +363,15 @@ def create_bordered_env(coverage, grid_size):
 
 if __name__ == "__main__":
     np.set_printoptions(threshold=sys.maxsize)
-    
+    color_value_for_path = 0.5
 
 # ----- User Inputs ------------
 
     grid_size = 128
-    color_value_for_path = 0.5
-    test = "random"  # can be "static plots", "BFS", "DFS", "dijkstra", or "random"
-    obstacle_file_location = r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_2"
-    goal_location = (25,25)
+    goal_location = (25,25)  # coordinate of goal
+    test = "BFS"  # can be "static plots", "BFS", "DFS", "dijkstra", or "random"
+    obstacle_file_location = r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_2"  # location of the npy files 
+
 
 # ------------------ Getting Static Plots ----------------------------------------  
     if test == "static plots":
