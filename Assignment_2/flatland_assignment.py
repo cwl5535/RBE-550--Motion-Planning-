@@ -172,15 +172,18 @@ def create_bordered_env(coverage, grid_size):
     return init_env
 
 if __name__ == "__main__":
-    
+# ------------------ Getting Static Plots ----------------------------------------  
+    # import os
+
     # env_0 = create_bordered_env(coverage=0, grid_size=128)
     # env_25 = create_bordered_env(coverage=0.25, grid_size=128)
     # env_50 = create_bordered_env(coverage=0.5, grid_size=128)
     # env_65 = create_bordered_env(coverage=0.65, grid_size=128)
 
-    # # np.save("0_coverage.npy", env_0)
-    # # np.save("25_coverage.npy", env_25)
-    # # np.save("50_coverage.npy", env_50)
+    # os.chdir(r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_2")
+    # np.save("0_coverage.npy", env_0)
+    # np.save("25_coverage.npy", env_25)
+    # np.save("50_coverage.npy", env_50)
     # np.save("65_coverage.npy", env_65)
 
     # cmap = ListedColormap(["white", "blue", "black"]) # sets 0 as white, 1 as black. See https://stackoverflow.com/questions/68390704/assign-specific-colors-to-values-of-an-array-when-plotting-it-using-imshow-witho
@@ -194,13 +197,17 @@ if __name__ == "__main__":
     # # plt.imshow(breadth_env_25, cmap=cmap)
     # plt.show()
 
+
+# ----------------------------------------------------------
+
+
     np.set_printoptions(threshold=sys.maxsize)
 
 
     # Initial Environment with Closed Border
     grid_size = 128
     color_value_for_path = 0.5
-
+    path = r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_2"
 
 
     #  ---------------------------------     Performing Breadth First Search -------------------------------------------------------------
@@ -210,7 +217,8 @@ if __name__ == "__main__":
     """
     0% Coverage Calculations
     """
-    start_env = np.load(r"0_coverage.npy")
+    start_env = np.load(path + "/0_coverage.npy")
+    print(f"Coverage = 0%")
     starting_row, starting_col, init_env = place_robot("NW", start_env)
     starting_location = (starting_row, starting_col)
     init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
@@ -221,7 +229,8 @@ if __name__ == "__main__":
     """
     25% Coverage Calculations
     """
-    start_env = np.load(r"25_coverage.npy")
+    start_env = np.load(path + "/25_coverage.npy")
+    print(f"Coverage = 25%")
     starting_row, starting_col, init_env = place_robot("NW", start_env)
     starting_location = (starting_row, starting_col)
     init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
@@ -232,7 +241,8 @@ if __name__ == "__main__":
     """
     50% Coverage Calculations
     """
-    start_env = np.load(r"50_coverage.npy")
+    start_env = np.load(path + "/50_coverage.npy")
+    print(f"Coverage = 50%")
     starting_row, starting_col, init_env = place_robot("NW", start_env)
     starting_location = (starting_row, starting_col)
     init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
@@ -243,7 +253,8 @@ if __name__ == "__main__":
     75% Coverage Calculations
     """
 
-    start_env = np.load(r"65_coverage.npy")
+    start_env = np.load(path + "/65_coverage.npy")
+    print(f"Coverage = 65%")
     starting_row, starting_col, init_env = place_robot("NW", start_env)
     starting_location = (starting_row, starting_col)
     init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
@@ -301,14 +312,14 @@ if __name__ == "__main__":
     # ---------------------------------     Plots         -------------------------------------------------------------
 
     plt.figure("Assignment 2: Flatland Assignment")
-    plt.suptitle("Breadth First Search")
+    plt.suptitle(f"Breadth First Search - Goal Location: {goal_location}")
     cmap = ListedColormap(["white", "blue", "black"]) # sets 0 as white, 1 as black. See https://stackoverflow.com/questions/68390704/assign-specific-colors-to-values-of-an-array-when-plotting-it-using-imshow-witho
     cmap.set_bad("red")   # sets value that's not 0 or 1 to red. In this case it's np.nan. 
 
     plt.subplot(2, 4, (1,5)), plt.imshow(breadth_env_0, cmap =  cmap), plt.title("0% Coverage")
     plt.subplot(2, 4, (2,6)), plt.imshow(breadth_env_25, cmap = cmap), plt.title("25% Coverage")
     plt.subplot(2, 4, (3,7)), plt.imshow(breadth_env_50, cmap = cmap), plt.title("50% Coverage")
-    plt.subplot(2, 4, (4,8)), plt.imshow(breadth_env_75, cmap = cmap), plt.title("75% Coverage")
+    plt.subplot(2, 4, (4,8)), plt.imshow(breadth_env_75, cmap = cmap), plt.title("65% Coverage")
 
     # plt.imshow(breadth_env_25, cmap=cmap)
 
