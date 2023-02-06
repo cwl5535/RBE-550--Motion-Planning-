@@ -92,9 +92,6 @@ def check_surroundings_DFS(environment, current_location: tuple, stack) -> list:
                 stack.append(key)
         return stack
 
-    
-
-
 
 def explore_node(location: tuple, environment):
     environment[location[0], location[1]] = color_value_for_path  # marks path with yellow (0.5 used for value)
@@ -119,11 +116,12 @@ def explore_depth(starting_location: tuple, goal_location: tuple, environment, i
             achieved = True
             break 
         else:
-            try:
+            # try:
                 environment, achieved, i = explore_depth(starting_location= current_location, goal_location=goal_location, environment= environment, i = i, stack= node_stack) #recursion
-            except RecursionError:
-                # print("You have reached the recursion limit!")
                 break
+            # except RecursionError:
+            #     # print("You have reached the recursion limit!")
+            #     break
     return environment, achieved, i
 
 def depth_first(starting_location: tuple, goal_location: tuple, environment):
@@ -228,7 +226,7 @@ if __name__ == "__main__":
 
 
     np.set_printoptions(threshold=sys.maxsize)
-
+    sys.setrecursionlimit(3000)
 
     # Initial Environment with Closed Border
     grid_size = 128
@@ -332,7 +330,7 @@ if __name__ == "__main__":
     starting_location = (starting_row, starting_col)
     init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
 
-    depth_env_75, iterations_depth_65 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+    depth_env_65, iterations_depth_65 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
     print(f"Number of Iterations: {iterations_depth_65}\n")
 
     # ---------------------------------     Plots         -------------------------------------------------------------
