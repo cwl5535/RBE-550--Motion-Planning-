@@ -33,7 +33,11 @@ def place_robot(starting_quadrant, obstacle_field):
     return row, col, obstacle_field
 
 
-def check_surroundings(environment, current_locations: list) -> list:
+def check_surroundings_BFS(environment, current_locations: list) -> list:
+    """
+    For BFS, it is necessary to check a list of locations as this is many nodes at the same level
+    For DFS, one node will always be checked
+    """
     nodes_to_explore = []
     for location in current_locations: 
         row = location[0]
@@ -49,7 +53,7 @@ def check_surroundings(environment, current_locations: list) -> list:
         
 
 
-        if (all(x!=0 for x in surroundings.values())):
+        if (all(x!=0 for x in surroundings.values())):  # if all surrounding values have either been explored or are a wall, 
             # print("No Possible nodes to explore. I am stuck :(")
             continue
         for key, value in surroundings.items():
@@ -58,8 +62,35 @@ def check_surroundings(environment, current_locations: list) -> list:
                 nodes_to_explore.append(key)
     
     return nodes_to_explore
+
+def check_surroundings_DFS(environment, current_location: tuple, stack) -> list:
+    """
+    DFS only does one node at a time
+    Checks what nodes are available to be explored and adds it to the stack
+    """
+
+    row = current_location[0]
+    col = current_location[1] 
+
+    # surroundings = {(row-1, col-1): environment[row-1, col-1],    (row-1, col): environment[row-1, col],     (row-1, col+1): environment[row-1, col+1],
+    #                 (row,   col-1): environment[row,   col-1],                                               (row,   col+1): environment[row,   col+1], 
+    #                 (row+1, col-1): environment[row+1, col-1],    (row+1, col): environment[row+1, col],     (row+1, col+1): environment[row+1, col+1] }
+    
+    surroundings = {                                          (row-1, col): environment[row-1, col],
+                    (row,   col-1): environment[row,   col-1],                                               (row,   col+1): environment[row,   col+1], 
+                                                                (row+1, col+1): environment[row+1, col+1] }
     
 
+
+    if (all(x!=0 for x in surroundings.values())):  # if all surrounding values have either been explored or are a wall, 
+        # print("No Possible nodes to explore. I am stuck :(")
+        return stack
+    else:
+        for key, value in surroundings.items():
+            if value == 0:
+            # print("Valid Node found!")
+                stack.append(key)
+        return stack
 
 
 def explore_node(location: tuple, environment):
@@ -67,40 +98,39 @@ def explore_node(location: tuple, environment):
     return environment
 
 
-def explore_depth(starting_location: tuple, goal_location: tuple, environment, i): 
-    current_locations = [starting_location]
+def explore_depth(starting_location: tuple, goal_location: tuple, environment, i, stack): 
+    current_location = starting_location
     while True: 
         i += 1
         achieved = False
         # check our surroundings, get a list of eligible locations, change them all to yellow, 
-        eligible_nodes = check_surroundings(environment = environment, current_locations= current_locations)
-        if len(eligible_nodes) == 0:
-            print("No Possible nodes to move to. I am stuck :(")
+        node_stack = check_surroundings_DFS(environment = environment, current_location= current_location, stack= stack)
+        if len(node_stack) == 0:
+            # print("No Possible nodes to move to. I am stuck :(")
             break
-
-        for node in eligible_nodes:
-            new_env = explore_node(node, environment)
-            environment = new_env
-            current_location = node
-            if current_location == goal_location:
-                achieved = True
-                break 
-            else:
-                environment, achieved, i = explore_depth(starting_location= current_location, goal_location=goal_location, environment= environment, i = i) #recursion
-            
+        last_node = node_stack.pop()
+        new_env = explore_node(last_node, environment)
+        environment = new_env
+        current_location = last_node
+        if current_location == goal_location:
+            achieved = True
+            break 
         else:
-            # current_locations = eligible_nodes
-         
-            continue
-        break
+            # try:
+                environment, achieved, i = explore_depth(starting_location= current_location, goal_location=goal_location, environment= environment, i = i, stack= node_stack) #recursion
+                break
+            # except RecursionError:
+            #     # print("You have reached the recursion limit!")
+            #     break
     return environment, achieved, i
 
 def depth_first(starting_location: tuple, goal_location: tuple, environment):
     print("Beginning Depth First Search!")
     print(f"Goal Location: {goal_location}")
     i = 0
-
-    new_env, achieved, i = explore_depth(starting_location=starting_location, goal_location= goal_location, environment= environment, i = i)
+    stack = []
+    new_env, achieved, i = explore_depth(starting_location=starting_location, goal_location= goal_location, environment= environment, i = i, stack= stack)
+        
     if achieved:
         print("Goal location has been achieved!")
     environment[goal_location[0], goal_location[1]] = np.nan
@@ -117,7 +147,7 @@ def breadth_first(starting_location: tuple, goal_location: tuple, environment):
         i += 1
         achieved = False
         # check our surroundings, get a list of eligible locations, change them all to yellow, 
-        eligible_nodes = check_surroundings(environment = environment, current_locations= current_locations)
+        eligible_nodes = check_surroundings_BFS(environment = environment, current_locations= current_locations)
         if len(eligible_nodes) == 0:
             print("No Possible nodes to move to. I am stuck :(")
             new_env = environment
@@ -169,7 +199,7 @@ if __name__ == "__main__":
     # env_50 = create_bordered_env(coverage=0.5, grid_size=128)
     # env_65 = create_bordered_env(coverage=0.65, grid_size=128)
 
-    starting_row, starting_col, init_env = place_robot("NW", init_env)
+    # starting_row, starting_col, init_env = place_robot("NW", init_env)
 
     # Displaying the environment
 
@@ -196,65 +226,64 @@ if __name__ == "__main__":
 
 
     np.set_printoptions(threshold=sys.maxsize)
-
+    sys.setrecursionlimit(3000)
 
     # Initial Environment with Closed Border
     grid_size = 128
     color_value_for_path = 0.5
     path = r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_2"
-
+    goal_location = (25,25)
 
     #  ---------------------------------     Performing Breadth First Search -------------------------------------------------------------
 
-    goal_location = (25,25)
 
-    """
-    0% Coverage Calculations
-    """
-    start_env = np.load(path + "/0_coverage.npy")
-    print(f"Coverage = 0%")
-    starting_row, starting_col, init_env = place_robot("NW", start_env)
-    starting_location = (starting_row, starting_col)
-    init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
+    # """
+    # 0% Coverage Calculations
+    # """
+    # start_env = np.load(path + "/0_coverage.npy")
+    # print(f"Coverage = 0%")
+    # starting_row, starting_col, init_env = place_robot("NW", start_env)
+    # starting_location = (starting_row, starting_col)
+    # init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
 
-    breadth_env_0, iterations_breadth_0 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    print(f"Number of Iterations: {iterations_breadth_0}\n")
+    # breadth_env_0, iterations_breadth_0 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+    # print(f"Number of Iterations: {iterations_breadth_0}\n")
 
-    """
-    25% Coverage Calculations
-    """
-    start_env = np.load(path + "/25_coverage.npy")
-    print(f"Coverage = 25%")
-    starting_row, starting_col, init_env = place_robot("NW", start_env)
-    starting_location = (starting_row, starting_col)
-    init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
+    # """
+    # 25% Coverage Calculations
+    # """
+    # start_env = np.load(path + "/25_coverage.npy")
+    # print(f"Coverage = 25%")
+    # starting_row, starting_col, init_env = place_robot("NW", start_env)
+    # starting_location = (starting_row, starting_col)
+    # init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
 
-    breadth_env_25, iterations_breadth_25 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    print(f"Number of Iterations: {iterations_breadth_25}\n")
+    # breadth_env_25, iterations_breadth_25 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+    # print(f"Number of Iterations: {iterations_breadth_25}\n")
 
-    """
-    50% Coverage Calculations
-    """
-    start_env = np.load(path + "/50_coverage.npy")
-    print(f"Coverage = 50%")
-    starting_row, starting_col, init_env = place_robot("NW", start_env)
-    starting_location = (starting_row, starting_col)
-    init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
+    # """
+    # 50% Coverage Calculations
+    # """
+    # start_env = np.load(path + "/50_coverage.npy")
+    # print(f"Coverage = 50%")
+    # starting_row, starting_col, init_env = place_robot("NW", start_env)
+    # starting_location = (starting_row, starting_col)
+    # init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
 
-    breadth_env_50, iterations_breadth_50 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    print(f"Number of Iterations: {iterations_breadth_50}\n")
-    """
-    75% Coverage Calculations
-    """
+    # breadth_env_50, iterations_breadth_50 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+    # print(f"Number of Iterations: {iterations_breadth_50}\n")
+    # """
+    # 75% Coverage Calculations
+    # """
 
-    start_env = np.load(path + "/65_coverage.npy")
-    print(f"Coverage = 65%")
-    starting_row, starting_col, init_env = place_robot("NW", start_env)
-    starting_location = (starting_row, starting_col)
-    init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
+    # start_env = np.load(path + "/65_coverage.npy")
+    # print(f"Coverage = 65%")
+    # starting_row, starting_col, init_env = place_robot("NW", start_env)
+    # starting_location = (starting_row, starting_col)
+    # init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
 
-    breadth_env_75, iterations_breadth_75 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    print(f"Number of Iterations: {iterations_breadth_75}\n")
+    # breadth_env_75, iterations_breadth_75 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+    # print(f"Number of Iterations: {iterations_breadth_75}\n")
 
 
     #  ---------------------------------     Performing Depth First Search -------------------------------------------------------------
@@ -262,58 +291,59 @@ if __name__ == "__main__":
     """
     0% Coverage Calculations
     """
-    # start_env = create_bordered_env(coverage= 0, grid_size=grid_size)
-    # starting_row, starting_col, init_env = place_robot("NW", start_env)
-    # starting_location = (starting_row, starting_col)
-    # init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+    start_env = create_bordered_env(coverage= 0, grid_size=grid_size)
+    starting_row, starting_col, init_env = place_robot("NW", start_env)
+    starting_location = (starting_row, starting_col)
+    init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
 
-    # depth_env_0, iterations_breadth_0 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    # print(f"Number of Iterations: {iterations_depth_0}\n")
+    depth_env_0, iterations_depth_0 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+    print(f"Number of Iterations: {iterations_depth_0}\n")
 
     """
     25% Coverage Calculations
     """
-    # start_env = create_bordered_env(coverage= 0.25, grid_size=grid_size)
-    # starting_row, starting_col, init_env = place_robot("NW", start_env)
-    # starting_location = (starting_row, starting_col)
-    # init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+    start_env = create_bordered_env(coverage= 0.25, grid_size=grid_size)
+    starting_row, starting_col, init_env = place_robot("NW", start_env)
+    starting_location = (starting_row, starting_col)
+    init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
 
-    # depth_env_25, iterations_breadth_25 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    # print(f"Number of Iterations: {iterations_depth_25}\n")
+    depth_env_25, iterations_depth_25 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+    print(f"Number of Iterations: {iterations_depth_25}\n")
 
     """
     50% Coverage Calculations
     """
-    # start_env = create_bordered_env(coverage= 0.250, grid_size=grid_size)
-    # starting_row, starting_col, init_env = place_robot("NW", start_env)
-    # starting_location = (starting_row, starting_col)
-    # init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+    start_env = create_bordered_env(coverage= 0.50, grid_size=grid_size)
+    starting_row, starting_col, init_env = place_robot("NW", start_env)
+    starting_location = (starting_row, starting_col)
+    init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
 
-    # depth_env_50, iterations_breadth_50 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    # print(f"Number of Iterations: {iterations_depth_50}\n")
+    depth_env_50, iterations_depth_50 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+    print(f"Number of Iterations: {iterations_depth_50}\n")
+
     """
-    75% Coverage Calculations
+    65% Coverage Calculations
     """
 
-    # start_env = create_bordered_env(coverage= 0.70, grid_size=grid_size)
-    # starting_row, starting_col, init_env = place_robot("NW", start_env)
-    # starting_location = (starting_row, starting_col)
-    # init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+    start_env = create_bordered_env(coverage= 0.65, grid_size=grid_size)
+    starting_row, starting_col, init_env = place_robot("NW", start_env)
+    starting_location = (starting_row, starting_col)
+    init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
 
-    # depth_env_75, iterations_breadth_75 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    # print(f"Number of Iterations: {iterations_depth_75}\n")
+    depth_env_65, iterations_depth_65 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+    print(f"Number of Iterations: {iterations_depth_65}\n")
 
     # ---------------------------------     Plots         -------------------------------------------------------------
 
     plt.figure("Assignment 2: Flatland Assignment")
-    plt.suptitle(f"Breadth First Search - Goal Location: {goal_location}")
+    plt.suptitle(f"Depth First Search - Goal Location: {goal_location}")
     cmap = ListedColormap(["white", "blue", "black"]) # sets 0 as white, 1 as black. See https://stackoverflow.com/questions/68390704/assign-specific-colors-to-values-of-an-array-when-plotting-it-using-imshow-witho
     cmap.set_bad("red")   # sets value that's not 0 or 1 to red. In this case it's np.nan. 
 
-    plt.subplot(2, 4, (1,5)), plt.imshow(breadth_env_0, cmap =  cmap), plt.title("0% Coverage")
-    plt.subplot(2, 4, (2,6)), plt.imshow(breadth_env_25, cmap = cmap), plt.title("25% Coverage")
-    plt.subplot(2, 4, (3,7)), plt.imshow(breadth_env_50, cmap = cmap), plt.title("50% Coverage")
-    plt.subplot(2, 4, (4,8)), plt.imshow(breadth_env_75, cmap = cmap), plt.title("65% Coverage")
+    plt.subplot(2, 4, (1,5)), plt.imshow(depth_env_0, cmap =  cmap), plt.title("0% Coverage")
+    plt.subplot(2, 4, (2,6)), plt.imshow(depth_env_25, cmap = cmap), plt.title("25% Coverage")
+    plt.subplot(2, 4, (3,7)), plt.imshow(depth_env_50, cmap = cmap), plt.title("50% Coverage")
+    plt.subplot(2, 4, (4,8)), plt.imshow(depth_env_65, cmap = cmap), plt.title("65% Coverage")
 
     # plt.imshow(breadth_env_25, cmap=cmap)
 
