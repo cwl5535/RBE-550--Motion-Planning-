@@ -178,9 +178,9 @@ if __name__ == "__main__":
     env_50 = create_bordered_env(coverage=0.5, grid_size=128)
     env_65 = create_bordered_env(coverage=0.65, grid_size=128)
 
-    np.save("0_coverage.npy", env_0)
-    np.save("25_coverage.npy", env_25)
-    np.save("50_coverage.npy", env_50)
+    # np.save("0_coverage.npy", env_0)
+    # np.save("25_coverage.npy", env_25)
+    # np.save("50_coverage.npy", env_50)
     np.save("65_coverage.npy", env_65)
 
     cmap = ListedColormap(["white", "blue", "black"]) # sets 0 as white, 1 as black. See https://stackoverflow.com/questions/68390704/assign-specific-colors-to-values-of-an-array-when-plotting-it-using-imshow-witho
