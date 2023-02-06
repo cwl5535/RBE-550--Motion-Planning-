@@ -9,15 +9,12 @@ Worcester Polytechnic Institute
 Spring 2023
 """
 
- 
-
 def add_tetromino(environment, tetrominoes): 
     '''
     Arguments: 
         environment - `numpy array`, environment to add obstacle to. 
     Description: function to add tetronimo to given environment
     '''
-# TODO: Find way to add tetrominoes without adding zeros. Adding zeros destroys preestablished borders such as the one for assignment 2
 
     # random number used to find a position in the environment to place tetromino
     random_row = random.randint(0, environment.shape[0])  
@@ -70,7 +67,7 @@ def show_obstacle_field(environment):
 def create_obstacle_field(environment, goal_coverage):
 
     """
-    Arguments: 
+    Arguments:  
         environment - `numpy array` , initial environment to create obstacle field onto. 
         goal_coverage - `float` , decimal value of desired coverage for obstacle field i.e. 0.7 means 70%. 
     Description: 
@@ -82,14 +79,19 @@ def create_obstacle_field(environment, goal_coverage):
                np.array([[0,1],[1,1],[0,1]])]
 
     coverage = 0
-    new_env = add_tetromino(environment, tetrominoes)
 
-    while coverage < goal_coverage: 
-        new_env = add_tetromino(new_env, tetrominoes)
-        coverage = check_coverage(new_env)
-    cov_print = round(coverage * 100)
+    if goal_coverage == 0:
+        new_env = environment
+        print(f"Coverage = 0%")
+    else:
+        new_env = add_tetromino(environment, tetrominoes)
 
-    print(f"Coverage = {cov_print}%")
+        while coverage < goal_coverage: 
+            new_env = add_tetromino(new_env, tetrominoes)
+            coverage = check_coverage(new_env)
+        cov_print = round(coverage * 100)
+
+        print(f"Coverage = {cov_print}%")
     return new_env, coverage
 
 if __name__ == "__main__": 
