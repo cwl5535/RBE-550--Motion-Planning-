@@ -194,7 +194,7 @@ if __name__ == "__main__":
     
 
 # ----- User Inputs ------------
-    sys.setrecursionlimit(5000)
+    sys.setrecursionlimit(3000)
     grid_size = 128
     color_value_for_path = 0.5
     test = "DFS"
