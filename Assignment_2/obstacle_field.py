@@ -67,7 +67,7 @@ def show_obstacle_field(environment):
 def create_obstacle_field(environment, goal_coverage):
 
     """
-    Arguments: 
+    Arguments:  
         environment - `numpy array` , initial environment to create obstacle field onto. 
         goal_coverage - `float` , decimal value of desired coverage for obstacle field i.e. 0.7 means 70%. 
     Description: 
