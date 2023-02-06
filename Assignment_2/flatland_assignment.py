@@ -33,6 +33,35 @@ def place_robot(starting_quadrant, obstacle_field):
     return row, col, obstacle_field
 
 
+def check_surroundings_random_search(environment, current_locations) -> list:
+    """
+    For BFS, it is necessary to check a list of locations as this is many nodes at the same level
+    For DFS, one node will always be checked
+    """
+    nodes_to_explore = []
+    row = current_locations[0]
+    col = current_locations[1] 
+
+    # surroundings = {(row-1, col-1): environment[row-1, col-1],    (row-1, col): environment[row-1, col],     (row-1, col+1): environment[row-1, col+1],
+    #                 (row,   col-1): environment[row,   col-1],                                               (row,   col+1): environment[row,   col+1], 
+    #                 (row+1, col-1): environment[row+1, col-1],    (row+1, col): environment[row+1, col],     (row+1, col+1): environment[row+1, col+1] }
+    
+    surroundings = {                                          (row-1, col): environment[row-1, col],
+                    (row,   col-1): environment[row,   col-1],                                               (row,   col+1): environment[row,   col+1], 
+                                                                (row+1, col+1): environment[row+1, col+1] }
+    
+
+
+    if (all(x!=0 for x in surroundings.values())):  # if all surrounding values have either been explored or are a wall, 
+        # print("No Possible nodes to explore. I am stuck :(")
+        return nodes_to_explore
+    for key, value in surroundings.items():
+        if value == 0:
+            # print("Valid Node found!")
+            nodes_to_explore.append(key)
+
+    return nodes_to_explore
+
 def check_surroundings_BFS(environment, current_locations: list) -> list:
     """
     For BFS, it is necessary to check a list of locations as this is many nodes at the same level
@@ -171,6 +200,75 @@ def breadth_first(starting_location: tuple, goal_location: tuple, environment):
     environment[starting_location[0], starting_location[1]] = color_value_for_path
 
     return new_env, i
+    
+
+def random_search(starting_location: tuple, goal_location: tuple, environment):
+    print("Beginning Random Search!")
+    print(f"Goal Location: {goal_location}")
+    current_location = starting_location
+    i = 0
+    while True:
+        i += 1
+        achieved = False
+        if i > 250:
+            break
+        eligible_nodes = check_surroundings_random_search(environment = environment, current_locations= current_location)
+        if len(eligible_nodes) == 0: 
+            print("No Possible nodes to move to. I am stuck :(")
+            new_env = environment
+            break
+        for node in eligible_nodes: 
+            if environment[node[0], node[1]] == 0: 
+                new_env = explore_node(node, environment= environment)
+                current_location = node
+                if current_location == goal_location: 
+                    achieved = True
+                    break
+    if achieved:
+        print("Goal location has been achieved!")
+    environment[goal_location[0], goal_location[1]] = np.nan
+    environment[starting_location[0], starting_location[1]] = color_value_for_path
+
+    return new_env, i
+
+def dijkstras(starting_location: tuple, goal_location: tuple, environment):
+    """
+    In this use case, the cost of each cell is assumed to be the same, causing the results to yield similar to BFS
+    """
+    
+    print("Beginning Dijkstra's Search!")
+    print(f"Goal Location: {goal_location}")
+    current_locations = [starting_location]
+    i = 0
+    while True: 
+        i += 1
+        achieved = False
+        # check our surroundings, get a list of eligible locations, change them all to yellow, 
+        eligible_nodes = check_surroundings_BFS(environment = environment, current_locations= current_locations)
+        if len(eligible_nodes) == 0:
+            print("No Possible nodes to move to. I am stuck :(")
+            new_env = environment
+            break
+        for node in eligible_nodes:
+            new_env = explore_node(node, environment)
+            environment = new_env
+            current_location = node
+            if current_location == goal_location:
+                achieved = True
+                break
+        else:
+            current_locations = eligible_nodes
+            # print(current_locations)
+            continue
+        break
+    
+    if achieved:
+        print("Goal location has been achieved!")
+    environment[goal_location[0], goal_location[1]] = np.nan
+    environment[starting_location[0], starting_location[1]] = color_value_for_path
+
+    return new_env, i
+
 
 
 def create_bordered_env(coverage, grid_size):
@@ -194,10 +292,10 @@ if __name__ == "__main__":
     
 
 # ----- User Inputs ------------
-    sys.setrecursionlimit(3000)
+
     grid_size = 128
     color_value_for_path = 0.5
-    test = "DFS"
+    test = "random"  # can be "static plots", "BFS", "DFS", "dijkstra", or "random"
     obstacle_file_location = r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_2"
     goal_location = (25,25)
 
@@ -300,7 +398,9 @@ if __name__ == "__main__":
     """
     0% Coverage Calculations
     """
+
     if test == "DFS":
+        sys.setrecursionlimit(3000)  # exceeding 3000 causes issues
         start_env = np.load(obstacle_file_location + "/0_coverage.npy")
         print(f"Coverage = 0%")
         starting_row, starting_col, init_env = place_robot("NW", start_env)
@@ -365,5 +465,131 @@ if __name__ == "__main__":
 
     #  ---------------------------------     Performing Dijkstra's Search -------------------------------------------------------------
 
+    if test == "dijkstra":
+        start_env = np.load(obstacle_file_location + "/0_coverage.npy")
+        print(f"Coverage = 0%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+
+        dijkstras_env_0, iterations_dijkstras_0 = dijkstras(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_dijkstras_0}\n")
+
+        """
+        25% Coverage Calculations
+        """
+        start_env = np.load(obstacle_file_location + "/25_coverage.npy")
+        print(f"Coverage = 25%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+
+        dijkstras_env_25, iterations_dijkstras_25 = dijkstras(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_dijkstras_25}\n")
+
+        """
+        50% Coverage Calculations
+        """
+        start_env = np.load(obstacle_file_location + "/50_coverage.npy")
+        print(f"Coverage = 50%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+
+        dijkstras_env_50, iterations_dijkstras_50 = dijkstras(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_dijkstras_50}\n")
+
+        """
+        65% Coverage Calculations
+        """
+
+        start_env = np.load(obstacle_file_location + "/65_coverage.npy")
+        print(f"Coverage = 65%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+
+        dijkstras_env_65, iterations_dijkstras_65 = dijkstras(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_dijkstras_65}\n")
+
+        # ---------------------------------     Plots         -------------------------------------------------------------
+
+        plt.figure("Assignment 2: Flatland Assignment")
+        plt.suptitle(f"Dijkstra's Search - Goal Location: {goal_location}")
+        cmap = ListedColormap(["white", "blue", "black"]) # sets 0 as white, 1 as black. See https://stackoverflow.com/questions/68390704/assign-specific-colors-to-values-of-an-array-when-plotting-it-using-imshow-witho
+        cmap.set_bad("red")   # sets value that's not 0 or 1 to red. In this case it's np.nan. 
+
+        plt.subplot(2, 4, (1,5)), plt.imshow(dijkstras_env_0, cmap =  cmap), plt.title("0% Coverage")
+        plt.subplot(2, 4, (2,6)), plt.imshow(dijkstras_env_25, cmap = cmap), plt.title("25% Coverage")
+        plt.subplot(2, 4, (3,7)), plt.imshow(dijkstras_env_50, cmap = cmap), plt.title("50% Coverage")
+        plt.subplot(2, 4, (4,8)), plt.imshow(dijkstras_env_65, cmap = cmap), plt.title("65% Coverage")
+
+
+        plt.show()
 
     #  ---------------------------------     Performing Random Search -------------------------------------------------------------
+
+        """
+    0% Coverage Calculations
+    """
+    if test == "random":
+        start_env = np.load(obstacle_file_location + "/0_coverage.npy")
+        print(f"Coverage = 0%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+
+        random_env_0, iterations_random_0 = random_search(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_random_0}\n")
+
+        """
+        25% Coverage Calculations
+        """
+        start_env = np.load(obstacle_file_location + "/25_coverage.npy")
+        print(f"Coverage = 25%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+
+        random_env_25, iterations_random_25 = random_search(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_random_25}\n")
+
+        """
+        50% Coverage Calculations
+        """
+        start_env = np.load(obstacle_file_location + "/50_coverage.npy")
+        print(f"Coverage = 50%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+
+        random_env_50, iterations_random_50 = random_search(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_random_50}\n")
+
+        """
+        65% Coverage Calculations
+        """
+
+        start_env = np.load(obstacle_file_location + "/65_coverage.npy")
+        print(f"Coverage = 65%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+
+        random_env_65, iterations_random_65 = random_search(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_random_65}\n")
+
+        # ---------------------------------     Plots         -------------------------------------------------------------
+
+        plt.figure("Assignment 2: Flatland Assignment")
+        plt.suptitle(f"Random Search, 250 Iterations - Goal Location: {goal_location}")
+        cmap = ListedColormap(["white", "blue", "black"]) # sets 0 as white, 1 as black. See https://stackoverflow.com/questions/68390704/assign-specific-colors-to-values-of-an-array-when-plotting-it-using-imshow-witho
+        cmap.set_bad("red")   # sets value that's not 0 or 1 to red. In this case it's np.nan. 
+
+        plt.subplot(2, 4, (1,5)), plt.imshow(random_env_0, cmap =  cmap), plt.title("0% Coverage")
+        plt.subplot(2, 4, (2,6)), plt.imshow(random_env_25, cmap = cmap), plt.title("25% Coverage")
+        plt.subplot(2, 4, (3,7)), plt.imshow(random_env_50, cmap = cmap), plt.title("50% Coverage")
+        plt.subplot(2, 4, (4,8)), plt.imshow(random_env_65, cmap = cmap), plt.title("65% Coverage")
+
+
+        plt.show()
