@@ -116,12 +116,12 @@ def explore_depth(starting_location: tuple, goal_location: tuple, environment, i
             achieved = True
             break 
         else:
-            # try:
+            try:
                 environment, achieved, i = explore_depth(starting_location= current_location, goal_location=goal_location, environment= environment, i = i, stack= node_stack) #recursion
                 break
-            # except RecursionError:
+            except RecursionError:
             #     # print("You have reached the recursion limit!")
-            #     break
+                break
     return environment, achieved, i
 
 def depth_first(starting_location: tuple, goal_location: tuple, environment):
@@ -190,162 +190,180 @@ def create_bordered_env(coverage, grid_size):
     return init_env
 
 if __name__ == "__main__":
-
-# ------------------ Getting Static Plots ----------------------------------------  
-    # import os
-
-    # env_0 = create_bordered_env(coverage=0, grid_size=128)
-    # env_25 = create_bordered_env(coverage=0.25, grid_size=128)
-    # env_50 = create_bordered_env(coverage=0.5, grid_size=128)
-    # env_65 = create_bordered_env(coverage=0.65, grid_size=128)
-
-    # starting_row, starting_col, init_env = place_robot("NW", init_env)
-
-    # Displaying the environment
-
-
-    # os.chdir(r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_2")
-    # np.save("0_coverage.npy", env_0)
-    # np.save("25_coverage.npy", env_25)
-    # np.save("50_coverage.npy", env_50)
-    # np.save("65_coverage.npy", env_65)
-
-    # cmap = ListedColormap(["white", "blue", "black"]) # sets 0 as white, 1 as black. See https://stackoverflow.com/questions/68390704/assign-specific-colors-to-values-of-an-array-when-plotting-it-using-imshow-witho
-    # cmap.set_bad("red")   # sets value that's not 0 or 1 to red. In this case it's np.nan. 
-
-    # plt.subplot(2, 4, (1,5)), plt.imshow(env_0, cmap =  cmap), plt.title("0% Coverage")
-    # plt.subplot(2, 4, (2,6)), plt.imshow(env_25, cmap = cmap), plt.title("25% Coverage")
-    # plt.subplot(2, 4, (3,7)), plt.imshow(env_50, cmap = cmap), plt.title("50% Coverage")
-    # plt.subplot(2, 4, (4,8)), plt.imshow(env_65, cmap = cmap), plt.title("65% Coverage")
-
-    # # plt.imshow(breadth_env_25, cmap=cmap)
-    # plt.show()
-
-
-# ----------------------------------------------------------
-
-
     np.set_printoptions(threshold=sys.maxsize)
-    sys.setrecursionlimit(3000)
+    
 
-    # Initial Environment with Closed Border
+# ----- User Inputs ------------
+    sys.setrecursionlimit(5000)
     grid_size = 128
     color_value_for_path = 0.5
-    path = r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_2"
+    test = "DFS"
+    obstacle_file_location = r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_2"
     goal_location = (25,25)
 
+# ------------------ Getting Static Plots ----------------------------------------  
+    if test == "static plots":
+        import os
+
+        env_0 = create_bordered_env(coverage=0, grid_size=128)
+        env_25 = create_bordered_env(coverage=0.25, grid_size=128)
+        env_50 = create_bordered_env(coverage=0.5, grid_size=128)
+        env_65 = create_bordered_env(coverage=0.65, grid_size=128)
+
+        starting_row, starting_col, init_env = place_robot("NW", init_env)
+
+        # Displaying the environment
+
+
+        os.chdir(r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_2")
+        np.save("0_coverage.npy", env_0)
+        np.save("25_coverage.npy", env_25)
+        np.save("50_coverage.npy", env_50)
+        np.save("65_coverage.npy", env_65)
+
+        cmap = ListedColormap(["white", "blue", "black"]) # sets 0 as white, 1 as black. See https://stackoverflow.com/questions/68390704/assign-specific-colors-to-values-of-an-array-when-plotting-it-using-imshow-witho
+        cmap.set_bad("red")   # sets value that's not 0 or 1 to red. In this case it's np.nan. 
+
+        plt.subplot(2, 4, (1,5)), plt.imshow(env_0, cmap =  cmap), plt.title("0% Coverage")
+        plt.subplot(2, 4, (2,6)), plt.imshow(env_25, cmap = cmap), plt.title("25% Coverage")
+        plt.subplot(2, 4, (3,7)), plt.imshow(env_50, cmap = cmap), plt.title("50% Coverage")
+        plt.subplot(2, 4, (4,8)), plt.imshow(env_65, cmap = cmap), plt.title("65% Coverage")
+
+        # plt.imshow(breadth_env_25, cmap=cmap)
+        plt.show()
+# ----------------------------------------------------------
     #  ---------------------------------     Performing Breadth First Search -------------------------------------------------------------
+    if test == "BFS":
+
+        # """
+        # 0% Coverage Calculations
+        # """
+        start_env = np.load(obstacle_file_location + "/0_coverage.npy")
+        print(f"Coverage = 0%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
+
+        breadth_env_0, iterations_breadth_0 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_breadth_0}\n")
+
+        # """
+        # 25% Coverage Calculations
+        # """
+        start_env = np.load(obstacle_file_location + "/25_coverage.npy")
+        print(f"Coverage = 25%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
+
+        breadth_env_25, iterations_breadth_25 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_breadth_25}\n")
+
+        # """
+        # 50% Coverage Calculations
+        # """
+        start_env = np.load(obstacle_file_location + "/50_coverage.npy")
+        print(f"Coverage = 50%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
+
+        breadth_env_50, iterations_breadth_50 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_breadth_50}\n")
+        # """
+        # 65% Coverage Calculations
+        # """
+
+        start_env = np.load(obstacle_file_location + "/65_coverage.npy")
+        print(f"Coverage = 65%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
+
+        breadth_env_65, iterations_breadth_65 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_breadth_65}\n")
+
+        plt.figure("Assignment 2: Flatland Assignment")
+        plt.suptitle(f"Depth First Search - Goal Location: {goal_location}")
+        cmap = ListedColormap(["white", "blue", "black"]) # sets 0 as white, 1 as black. See https://stackoverflow.com/questions/68390704/assign-specific-colors-to-values-of-an-array-when-plotting-it-using-imshow-witho
+        cmap.set_bad("red")   # sets value that's not 0 or 1 to red. In this case it's np.nan. 
+
+        plt.subplot(2, 4, (1,5)), plt.imshow(breadth_env_0, cmap =  cmap), plt.title("0% Coverage")
+        plt.subplot(2, 4, (2,6)), plt.imshow(breadth_env_25, cmap = cmap), plt.title("25% Coverage")
+        plt.subplot(2, 4, (3,7)), plt.imshow(breadth_env_50, cmap = cmap), plt.title("50% Coverage")
+        plt.subplot(2, 4, (4,8)), plt.imshow(breadth_env_65, cmap = cmap), plt.title("65% Coverage")
 
 
-    # """
-    # 0% Coverage Calculations
-    # """
-    # start_env = np.load(path + "/0_coverage.npy")
-    # print(f"Coverage = 0%")
-    # starting_row, starting_col, init_env = place_robot("NW", start_env)
-    # starting_location = (starting_row, starting_col)
-    # init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
-
-    # breadth_env_0, iterations_breadth_0 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    # print(f"Number of Iterations: {iterations_breadth_0}\n")
-
-    # """
-    # 25% Coverage Calculations
-    # """
-    # start_env = np.load(path + "/25_coverage.npy")
-    # print(f"Coverage = 25%")
-    # starting_row, starting_col, init_env = place_robot("NW", start_env)
-    # starting_location = (starting_row, starting_col)
-    # init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
-
-    # breadth_env_25, iterations_breadth_25 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    # print(f"Number of Iterations: {iterations_breadth_25}\n")
-
-    # """
-    # 50% Coverage Calculations
-    # """
-    # start_env = np.load(path + "/50_coverage.npy")
-    # print(f"Coverage = 50%")
-    # starting_row, starting_col, init_env = place_robot("NW", start_env)
-    # starting_location = (starting_row, starting_col)
-    # init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
-
-    # breadth_env_50, iterations_breadth_50 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    # print(f"Number of Iterations: {iterations_breadth_50}\n")
-    # """
-    # 75% Coverage Calculations
-    # """
-
-    # start_env = np.load(path + "/65_coverage.npy")
-    # print(f"Coverage = 65%")
-    # starting_row, starting_col, init_env = place_robot("NW", start_env)
-    # starting_location = (starting_row, starting_col)
-    # init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a cleared goal area
-
-    # breadth_env_75, iterations_breadth_75 = breadth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    # print(f"Number of Iterations: {iterations_breadth_75}\n")
-
-
+        plt.show()
     #  ---------------------------------     Performing Depth First Search -------------------------------------------------------------
 
     """
     0% Coverage Calculations
     """
-    start_env = create_bordered_env(coverage= 0, grid_size=grid_size)
-    starting_row, starting_col, init_env = place_robot("NW", start_env)
-    starting_location = (starting_row, starting_col)
-    init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+    if test == "DFS":
+        start_env = np.load(obstacle_file_location + "/0_coverage.npy")
+        print(f"Coverage = 0%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
 
-    depth_env_0, iterations_depth_0 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    print(f"Number of Iterations: {iterations_depth_0}\n")
+        depth_env_0, iterations_depth_0 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_depth_0}\n")
 
-    """
-    25% Coverage Calculations
-    """
-    start_env = create_bordered_env(coverage= 0.25, grid_size=grid_size)
-    starting_row, starting_col, init_env = place_robot("NW", start_env)
-    starting_location = (starting_row, starting_col)
-    init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+        """
+        25% Coverage Calculations
+        """
+        start_env = np.load(obstacle_file_location + "/25_coverage.npy")
+        print(f"Coverage = 25%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
 
-    depth_env_25, iterations_depth_25 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    print(f"Number of Iterations: {iterations_depth_25}\n")
+        depth_env_25, iterations_depth_25 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_depth_25}\n")
 
-    """
-    50% Coverage Calculations
-    """
-    start_env = create_bordered_env(coverage= 0.50, grid_size=grid_size)
-    starting_row, starting_col, init_env = place_robot("NW", start_env)
-    starting_location = (starting_row, starting_col)
-    init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+        """
+        50% Coverage Calculations
+        """
+        start_env = np.load(obstacle_file_location + "/50_coverage.npy")
+        print(f"Coverage = 50%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
 
-    depth_env_50, iterations_depth_50 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    print(f"Number of Iterations: {iterations_depth_50}\n")
+        depth_env_50, iterations_depth_50 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_depth_50}\n")
 
-    """
-    65% Coverage Calculations
-    """
+        """
+        65% Coverage Calculations
+        """
 
-    start_env = create_bordered_env(coverage= 0.65, grid_size=grid_size)
-    starting_row, starting_col, init_env = place_robot("NW", start_env)
-    starting_location = (starting_row, starting_col)
-    init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
+        start_env = np.load(obstacle_file_location + "/65_coverage.npy")
+        print(f"Coverage = 65%")
+        starting_row, starting_col, init_env = place_robot("NW", start_env)
+        starting_location = (starting_row, starting_col)
+        init_env[goal_location[0]-1: goal_location[0]+1, goal_location[1]-1: goal_location[1]+1] = 0  # create a goal area
 
-    depth_env_65, iterations_depth_65 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
-    print(f"Number of Iterations: {iterations_depth_65}\n")
+        depth_env_65, iterations_depth_65 = depth_first(starting_location=starting_location, goal_location=goal_location, environment=init_env)
+        print(f"Number of Iterations: {iterations_depth_65}\n")
 
-    # ---------------------------------     Plots         -------------------------------------------------------------
+        # ---------------------------------     Plots         -------------------------------------------------------------
 
-    plt.figure("Assignment 2: Flatland Assignment")
-    plt.suptitle(f"Depth First Search - Goal Location: {goal_location}")
-    cmap = ListedColormap(["white", "blue", "black"]) # sets 0 as white, 1 as black. See https://stackoverflow.com/questions/68390704/assign-specific-colors-to-values-of-an-array-when-plotting-it-using-imshow-witho
-    cmap.set_bad("red")   # sets value that's not 0 or 1 to red. In this case it's np.nan. 
+        plt.figure("Assignment 2: Flatland Assignment")
+        plt.suptitle(f"Depth First Search - Goal Location: {goal_location}")
+        cmap = ListedColormap(["white", "blue", "black"]) # sets 0 as white, 1 as black. See https://stackoverflow.com/questions/68390704/assign-specific-colors-to-values-of-an-array-when-plotting-it-using-imshow-witho
+        cmap.set_bad("red")   # sets value that's not 0 or 1 to red. In this case it's np.nan. 
 
-    plt.subplot(2, 4, (1,5)), plt.imshow(depth_env_0, cmap =  cmap), plt.title("0% Coverage")
-    plt.subplot(2, 4, (2,6)), plt.imshow(depth_env_25, cmap = cmap), plt.title("25% Coverage")
-    plt.subplot(2, 4, (3,7)), plt.imshow(depth_env_50, cmap = cmap), plt.title("50% Coverage")
-    plt.subplot(2, 4, (4,8)), plt.imshow(depth_env_65, cmap = cmap), plt.title("65% Coverage")
-
-    # plt.imshow(breadth_env_25, cmap=cmap)
+        plt.subplot(2, 4, (1,5)), plt.imshow(depth_env_0, cmap =  cmap), plt.title("0% Coverage")
+        plt.subplot(2, 4, (2,6)), plt.imshow(depth_env_25, cmap = cmap), plt.title("25% Coverage")
+        plt.subplot(2, 4, (3,7)), plt.imshow(depth_env_50, cmap = cmap), plt.title("50% Coverage")
+        plt.subplot(2, 4, (4,8)), plt.imshow(depth_env_65, cmap = cmap), plt.title("65% Coverage")
 
 
-    plt.show()
+        plt.show()
+
+
+    #  ---------------------------------     Performing Dijkstra's Search -------------------------------------------------------------
+
+
+    #  ---------------------------------     Performing Random Search -------------------------------------------------------------
