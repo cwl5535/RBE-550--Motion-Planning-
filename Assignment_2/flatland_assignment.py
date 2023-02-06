@@ -32,6 +32,7 @@ def place_robot(starting_quadrant, obstacle_field):
     obstacle_field[row, col] = np.nan # making the robot a value that isn't 0 or 1 for a different color
     return row, col, obstacle_field
 
+
 def check_surroundings(environment, current_locations: list) -> list:
     nodes_to_explore = []
     for location in current_locations: 
@@ -149,6 +150,7 @@ def create_bordered_env(coverage, grid_size):
     # Adding the borders
     init_env[0, 0:grid_size], init_env[1:grid_size-1, 0], init_env[1:(grid_size-1), (grid_size-1)], init_env[(grid_size-1), 0:grid_size] = 1,1,1,1
 
+
     # Generating the obstacles within the area NOT including the border
     obstacle_field, coverage = create_obstacle_field(np.zeros(((grid_size-2),(grid_size-2))), goal_coverage= coverage)  # NOTE that size of environment given to create_obstacle_field is only the area that doesn't include the border from the init_env
 
@@ -158,6 +160,7 @@ def create_bordered_env(coverage, grid_size):
     return init_env
 
 if __name__ == "__main__":
+
 # ------------------ Getting Static Plots ----------------------------------------  
     # import os
 
@@ -165,6 +168,11 @@ if __name__ == "__main__":
     # env_25 = create_bordered_env(coverage=0.25, grid_size=128)
     # env_50 = create_bordered_env(coverage=0.5, grid_size=128)
     # env_65 = create_bordered_env(coverage=0.65, grid_size=128)
+
+    starting_row, starting_col, init_env = place_robot("NW", init_env)
+
+    # Displaying the environment
+
 
     # os.chdir(r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_2")
     # np.save("0_coverage.npy", env_0)
