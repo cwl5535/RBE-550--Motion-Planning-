@@ -4,12 +4,6 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import ListedColormap
 import sys
 
-def collision_check(cell_value): 
-    if (cell_value == 1) or (cell_value == color_value_for_path):
-        return True
-def move():
-    pass
-
 def place_robot(starting_quadrant, obstacle_field):
     
     obs_field_height = obstacle_field.shape[0]
@@ -37,14 +31,6 @@ def place_robot(starting_quadrant, obstacle_field):
     
     obstacle_field[row, col] = np.nan # making the robot a value that isn't 0 or 1 for a different color
     return row, col, obstacle_field
-
-
-
-
-class Robot(object): 
-    def __init__(self, starting_location: tuple): 
-        self.starting_location = starting_location  # tuple
-        self.previous_location = None
 
 def check_surroundings(environment, current_locations: list) -> list:
     nodes_to_explore = []
