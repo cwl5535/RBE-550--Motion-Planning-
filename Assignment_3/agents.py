@@ -5,7 +5,7 @@ from geometry import Point
 
 class Car(RectangleEntity):
     def __init__(self, center: Point, heading: float, color: str = 'red'):
-        size = Point(4., 2.)
+        size = Point(20., 10.)  # changed from (4., 2.) on 3-6-23
         movable = True
         friction = 0.06
         super(Car, self).__init__(center, heading, size, movable, friction)
