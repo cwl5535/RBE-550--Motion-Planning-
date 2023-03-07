@@ -23,7 +23,7 @@ class World:
         self.t += self.dt
     
     def render(self):
-        self.visualizer.create_window(bg_color = 'gray')
+        self.visualizer.create_window(bg_color = 'white')
         self.visualizer.update_agents(self.agents)
         
     @property
