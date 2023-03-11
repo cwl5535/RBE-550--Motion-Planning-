@@ -28,7 +28,10 @@ w.add(parked_car2)
 w.add(obstacle)
 
 
+inc = 0
 for k in range(500): 
+    # inc += 1
+    # car.set_control(-0.5,0.25)
     w.tick()
     w.render()
     time.sleep(dt/4)
