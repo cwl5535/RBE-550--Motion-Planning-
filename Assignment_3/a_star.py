@@ -2,10 +2,12 @@ from math import sqrt, pi, inf, radians, cos, sin
 from typing import List
 
 class State():
-    def __init__(self, x = 0, y = 0, theta = 0, past_cost = inf()): 
+    def __init__(self, x = 0, y = 0, theta = 0, past_cost = inf): 
 
         #self.cost_to_go = self.distance_to_goal(goal) # going to be calculated with Euclidean formulas 
-        self.past_cost = past_cost
+        self.g = past_cost
+        self.h = 0
+        self.f = 0
         self.x = x
         self.y = y
         self.theta = theta # possible states are 0 to 2pi, in 15 degree intervals
@@ -17,21 +19,25 @@ class State():
         dist = round(sqrt((delta_x**2) + (delta_y**2)),2)
         return dist
     
-    def calculate_cost(self, goal) -> float:
+    def calculate_g(self, next_state) -> float:
         # Distance Cost 
 
-        dist_cost = self.distance_to(goal)
+        dist_cost = self.g + self.distance_to(next_state)
 
         # Steering Cost
 
-        steering_cost = abs(self.theta - goal.theta)
+        steering_cost = abs(self.theta - next_state.theta)
 
         total_cost = round(dist_cost + steering_cost,2)
 
         return total_cost
 
-    def set_cost(self, cost):
-        self.tentative_cost = cost
+    def calculate_h(self, goal):
+        return self.distance_to(goal)
+    
+    def calculate_f(self):
+        return self.g + self.h
+    
 
 class AStar():
     def __init__(self, world_size, start: tuple, goal):
@@ -51,10 +57,10 @@ class AStar():
     def plan(self):
 
         self.add_to_open(self.start)
-        current = self.open[0]
+        
 
         while len(self.open) > 0:
-
+            current = self.open[0]
             self.open.pop()
             self.add_to_closed(current)
 
@@ -65,16 +71,17 @@ class AStar():
             neighbors = self.get_neighbors(current, timestep=0.1)
 
             for neighbor in neighbors: 
-                neighbor.g_tentative = current.g + neighbor.distance
-                neighbor.parent = current
-
                 if neighbor not in self.closed:
-                    tentative_cost = neighbor.calculate_cost(goal)
-                    neighbor.set_cost(tentative_cost)
 
-                    if neighbor.tentative_cost < neighbor.past_cost:
-                    
-                        self.open.append(neighbor)
+                    tentative_g = current.calculate_g(neighbor)
+
+                    if tentative_g < neighbor.g:
+                        neighbor.g = tentative_g
+                        neighbor.parent = current
+                        neighbor.h = neighbor.calculate_h(self.goal)
+                        neighbor.f = neighbor.calculate_f()
+                        self.add_to_open(neighbor)
+        return "No path found"
                         
 
 
