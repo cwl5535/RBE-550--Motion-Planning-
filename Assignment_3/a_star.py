@@ -2,49 +2,81 @@ from math import sqrt, pi, inf, radians, cos, sin
 from typing import List
 
 class State():
-    def __init__(self, x = 0, y = 0, theta = 0): 
+    def __init__(self, x = 0, y = 0, theta = 0, past_cost = inf()): 
 
         #self.cost_to_go = self.distance_to_goal(goal) # going to be calculated with Euclidean formulas 
-        self.past_cost = inf()
+        self.past_cost = past_cost
         self.x = x
         self.y = y
         self.theta = theta # possible states are 0 to 2pi, in 15 degree intervals
+        self.parent = None
 
-    def distance_to_goal(self, goal) -> float:
-        delta_x = (self.x - goal.x)
-        delta_y = (self.y - goal.y)
+    def distance_to(self, to) -> float:
+        delta_x = (self.x - to.x)
+        delta_y = (self.y - to.y)
         dist = round(sqrt((delta_x**2) + (delta_y**2)),2)
         return dist
     
-    def update_cost(self):
-        pass
+    def calculate_cost(self, goal) -> float:
+        # Distance Cost 
+
+        dist_cost = self.distance_to(goal)
+
+        # Steering Cost
+
+        steering_cost = abs(self.theta - goal.theta)
+
+        total_cost = round(dist_cost + steering_cost,2)
+
+        return total_cost
+
     def set_cost(self, cost):
         self.tentative_cost = cost
 
 class AStar():
-    def __init__(self, world_size):
+    def __init__(self, world_size, start: tuple, goal):
 
-        self.states = self.create_states(world_size)
+        self.start = State(start, past_cost = 0)  # start should be a 3 element tuple, with x y and theta values
+        self.goal = goal
         self.open = []
         self.closed = []
-        # self.past_cost = 0
-
+        self.path = [State(start, past_cost = 0)]
+        
     def add_to_open(self, state):
         self.open.append(state)
 
     def add_to_closed(self, state):
         self.closed.append(state)
 
-    def plan(self, goal):
-        self.add_to_open(self.states[0])
-        while len(self.open) > 0:
-            current = self.open[0]
-            self.add_to_closed(current)
-            self.states.pop(current)
+    def plan(self):
 
-            if self.goal_check(current, goal):
+        self.add_to_open(self.start)
+        current = self.open[0]
+
+        while len(self.open) > 0:
+
+            self.open.pop()
+            self.add_to_closed(current)
+
+            if self.goal_check(current, self.goal):
                 break
-            
+
+            # search for the surrounding neighbors
+            neighbors = self.get_neighbors(current, timestep=0.1)
+
+            for neighbor in neighbors: 
+                neighbor.g_tentative = current.g + neighbor.distance
+                neighbor.parent = current
+
+                if neighbor not in self.closed:
+                    tentative_cost = neighbor.calculate_cost(goal)
+                    neighbor.set_cost(tentative_cost)
+
+                    if neighbor.tentative_cost < neighbor.past_cost:
+                    
+                        self.open.append(neighbor)
+                        
+
 
             
 
