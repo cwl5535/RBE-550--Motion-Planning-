@@ -1,5 +1,5 @@
 from math import sqrt, pi, inf, radians, cos, sin
-from typing import List
+from typing import List, Tuple
 from matplotlib import pyplot as plt
 import numpy as np
 import time
@@ -8,28 +8,7 @@ from world import World
 from agents import Car, RectangleBuilding
 from create_world import create_world
 
-
-# dt = 0.1
-# w = World(dt, width = 120, height = 120, ppm = 6)
-
-# w.add(RectangleBuilding(Point(60,1), Point(120,2), 'gray26'))  # bottom border
-# w.add(RectangleBuilding(Point(60,119), Point(120,2), 'gray26')) # top border
-# w.add(RectangleBuilding(Point(1,60), Point(2,120), 'gray26'))  # left border
-# w.add(RectangleBuilding(Point(119,60), Point(2,120), 'gray26'))  # right border
-
-# # A Car object is a dynamic object -- it can move. We construct it using its center location and heading angle.
-# car = Car(Point(15, 110), 0, color = "green")
-
-# # parked_car1 = Car(Point(15, 10), 0)
-# parked_car1 = RectangleBuilding(Point(25, 10), Point(20,10), 'red')
-# # parked_car2 = Car(Point(90,10), 0)
-# parked_car2 = RectangleBuilding(Point(80,10), Point(20,10), 'red')
-# obstacle = RectangleBuilding(Point(70,70), Point(40,25), 'black')
-
-# w.add(car)
-# w.add(parked_car1)
-# w.add(parked_car2)
-# w.add(obstacle)
+# create world with obstacles >> have a way to access the x and y of obstacles
 
 
 
@@ -77,7 +56,7 @@ class State():
     
 
 class AStar():
-    def __init__(self, car, start: tuple, goal: tuple):
+    def __init__(self, car, obstacles_x, obstacles_y, world, start: tuple, goal: tuple):
 
         self.start = State(start[0], start[1], start[2], past_cost = 0)  # start should be a 3 element tuple, with x y and theta values
         self.goal = goal
@@ -85,6 +64,9 @@ class AStar():
         self.closed = []
         self.path = [State(start, past_cost = 0)]
         self.car = car
+        self.obstacles_x: List[Tuple] = obstacles_x
+        self.obstacles_y: List[Tuple] = obstacles_y
+        self.world = world
         
     def add_to_open(self, state):
         self.open.append(state)
@@ -97,7 +79,7 @@ class AStar():
         self.car.inputSteering = current_state.theta
         world.tick()
         world.render()
-        time.sleep(dt/4)
+        time.sleep(0.1/4)
     
     def show_path(self, last_state):
         path = np.zeros((120,120))
@@ -114,6 +96,19 @@ class AStar():
         plt.imshow(path, cmap = "binary")
 
         plt.show()
+    def collision_check(self, state) -> bool:
+        
+        for index in range(len(self.obstacles_x)):
+            x_left = self.obstacles_x[index][0]  # indexing a tuple 
+            x_right= self.obstacles_x[index][1]
+            y_left = self.obstacles_y[index][0]
+            y_right= self.obstacles_y[index][1]
+
+            if (round(state.x) in range(x_left, x_right+1)) and (round(state.y) in range(y_left, y_right + 1)):
+                self.add_to_closed(state)  # state causes collision and is added to closed as a result
+                print("Collision Occurred")
+                return True
+        return False
     def plan(self):
 
         # self.add_to_open(self.start)
@@ -122,7 +117,7 @@ class AStar():
         while len(self.open) > 0:
             print(f"Open list has {len(self.open)} states")
             current = self.open[0]
-            self.simulate(current)
+            self.simulate(current, self.car, self.world)
             self.open.pop(self.open.index(current))
             self.add_to_closed(current)
 
@@ -139,7 +134,8 @@ class AStar():
                 if neighbor not in self.closed:
                     
                     
-
+                    if self.collision_check(neighbor):
+                        continue
                     tentative_g = current.calculate_g(neighbor)
 
                     if tentative_g < neighbor.g:
@@ -203,9 +199,9 @@ class AStar():
         else:
             return 0
 
-if __name__ == "__main__":
-    planner = AStar((0,0,0), (30, 35, 0))
-    planner.plan()
+# if __name__ == "__main__":
+#     planner = AStar((0,0,0), (30, 35, 0))
+#     planner.plan()
         
 
 
