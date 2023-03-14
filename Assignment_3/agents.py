@@ -29,6 +29,8 @@ class RectangleBuilding(RectangleEntity):
         super(RectangleBuilding, self).__init__(center, heading, size, movable, friction)
         self.color = color
         self.collidable = True
+        self.x_range = (int(center.x) - (int(size.x)//2), int(center.x) + (int(size.x)//2))
+        self.y_range = (int(center.y) - (int(size.y)//2), int(center.y) + (int(size.y)//2))
         
 class CircleBuilding(CircleEntity):
     def __init__(self, center: Point, radius: float, color: str = 'gray26'):
