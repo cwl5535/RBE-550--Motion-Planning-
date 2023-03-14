@@ -16,8 +16,12 @@ class State():
         self.parent = None
 
     def distance_to(self, to) -> float:
-        delta_x = (self.x - to.x)
-        delta_y = (self.y - to.y)
+        if isinstance(to, tuple):
+            delta_x = (self.x - to[0])
+            delta_y = (self.x - to[1])
+        else:
+            delta_x = (self.x - to.x)
+            delta_y = (self.y - to.y)
         dist = round(sqrt((delta_x**2) + (delta_y**2)),2)
         return dist
     
@@ -77,8 +81,9 @@ class AStar():
         
 
         while len(self.open) > 0:
+            print(f"Open list has {len(self.open)} states")
             current = self.open[0]
-            self.open.pop()
+            self.open.pop(self.open.index(current))
             self.add_to_closed(current)
 
             if self.goal_check(current):
@@ -87,8 +92,7 @@ class AStar():
                 break
 
             # search for the surrounding neighbors
-
-            # TODO get_neighbors is not passing the object 
+ 
             neighbors = self.get_neighbors(current)
 
             for neighbor in neighbors: 
