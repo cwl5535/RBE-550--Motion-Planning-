@@ -18,5 +18,6 @@ world.add(car)
 # world.close()
 
 # TODO need to figure out why angles are everywhere, how the steering in CARLO works
+# TODO Wheels aren't given the ability to drive in reverse, only positive values
 planner = AStar(car, obstacle_x_ranges, obstacle_y_ranges, world, (30,90,0), (30,60,0))
 planner.plan()

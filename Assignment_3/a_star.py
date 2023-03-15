@@ -13,12 +13,12 @@ from create_world import create_world
 
 
 class State():
-    def __init__(self, x = 0, y = 0, theta = 0, velocity = Point(0,0), past_cost = inf): 
+    def __init__(self, x = 0, y = 0, theta = 0, velocity = Point(0,0), f = inf): 
 
         #self.cost_to_go = self.distance_to_goal(goal) # going to be calculated with Euclidean formulas 
-        self.g = past_cost
+        self.g = 0
         self.h = 0
-        self.f = 0
+        self.f = f
         self.x = x
         self.y = y
         self.theta = theta # possible states are 0 to 2pi, in 15 degree intervals
@@ -32,19 +32,22 @@ class State():
         else:
             delta_x = (self.x - to.x)
             delta_y = (self.y - to.y)
-        dist = round(sqrt((delta_x**2) + (delta_y**2)),2)
+        dist = sqrt((delta_x**2) + (delta_y**2))
         return dist
     
-    def calculate_g(self, next_state) -> float:
+    def calculate_g(self, parent) -> float:
         # Distance Cost 
 
-        dist_cost = self.g + self.distance_to(next_state)
+        distance = self.distance_to(parent)
+        dist_cost = parent.g + distance
 
         # Steering Cost
 
-        steering_cost = abs(self.theta - next_state.theta)
+        steering_cost = 2*abs(self.theta - parent.theta)
 
-        total_cost = round(dist_cost + steering_cost,2)
+        total_cost = dist_cost + steering_cost
+
+        # total_cost = round(dist_cost + steering_cost,2)
 
         return total_cost
 
@@ -58,11 +61,9 @@ class State():
 class AStar():
     def __init__(self, car, obstacles_x, obstacles_y, world, start: tuple, goal: tuple):
 
-        self.start = State(start[0], start[1], start[2], past_cost = 0)  # start should be a 3 element tuple, with x y and theta values
+        self.start = State(start[0], start[1], start[2], f = 0)  # start should be a 3 element tuple, with x y and theta values
         self.goal = goal
-        self.open = [self.start]
-        self.closed = []
-        self.path = [State(start, past_cost = 0)]
+        self.path = [State(start[0], start[1], start[2], f = 0)]
         self.car = car
         self.obstacles_x: List[Tuple] = obstacles_x
         self.obstacles_y: List[Tuple] = obstacles_y
@@ -75,8 +76,9 @@ class AStar():
         self.closed.append(state)
 
     def simulate(self, current_state, car, world):
-        self.car.velocity = current_state.velocity
-        self.car.inputSteering = current_state.theta
+        car.velocity = current_state.velocity
+        # print(self.car.velocity)
+        car.inputSteering = current_state.theta
         world.tick()
         world.render()
         time.sleep(0.1/4)
@@ -110,40 +112,67 @@ class AStar():
                 return True
         return False
     def plan(self):
+        self.start.h = self.start.calculate_h(self.goal)
+        self.start.f = self.start.calculate_f()
 
         # self.add_to_open(self.start)
-        
+        self.open = []
+        self.closed = []
+
+        self.add_to_open(self.start)
+
+
+        q = self.start
 
         while len(self.open) > 0:
-            print(f"Open list has {len(self.open)} states")
-            current = self.open[0]
-            self.simulate(current, self.car, self.world)
-            self.open.pop(self.open.index(current))
-            self.add_to_closed(current)
+            print(f"x: {q.x}, y: {q.y}, theta: {q.theta}")
+            # print(f"Open list has {len(self.open)} states")
 
-            if self.goal_check(current):
-                print("Goal found")
-                self.show_path(current)
-                break
-
+            # current = self.open[0]
+            self.simulate(q, self.car, self.world)
+            self.open.pop(self.open.index(q))
+            self.add_to_closed(q)
             # search for the surrounding neighbors
  
-            neighbors = self.get_neighbors(current)
+            neighbors = self.get_neighbors(q, timestep=0.5)
 
-            for neighbor in neighbors: 
+            previous_f = neighbors[0].f
+
+            for neighbor in neighbors:
                 if neighbor not in self.closed:
+                        
+                    if self.goal_check(neighbor):
+                        print("Goal found")
+                        self.show_path(q)
+                        break
                     
-                    
-                    if self.collision_check(neighbor):
-                        continue
-                    tentative_g = current.calculate_g(neighbor)
-
-                    if tentative_g < neighbor.g:
-                        neighbor.g = tentative_g
-                        neighbor.parent = current
+                    else:
+                        neighbor.g = neighbor.calculate_g(neighbor.parent)
                         neighbor.h = neighbor.calculate_h(self.goal)
                         neighbor.f = neighbor.calculate_f()
-                        self.add_to_open(neighbor)
+                    
+                    if neighbor.f < previous_f:
+                        q = neighbor
+                        previous_f = neighbor.f
+                
+            self.add_to_open(q)
+
+
+
+            # for neighbor in neighbors: 
+            #     if neighbor not in self.closed:
+                    
+                    
+            #         if self.collision_check(neighbor):
+            #             continue
+            #         tentative_g = current.calculate_g(neighbor)
+
+            #         if tentative_g < neighbor.g:
+            #             neighbor.g = tentative_g
+            #             neighbor.parent = current
+            #             neighbor.h = neighbor.calculate_h(self.goal)
+            #             neighbor.f = neighbor.calculate_f()
+            #             self.add_to_open(neighbor)
             
 
 
@@ -159,16 +188,16 @@ class AStar():
         
         return False
 
-    def get_neighbors(self, state, timestep = 0.1):
+    def get_neighbors(self, state, timestep = 0.1) -> List[State]:
         if isinstance(state, State):
             neighbors = []
 
             # what are all possible options to go to? I need to vary my position (x,y, theta) with the velocity equations
             # my inputs are for lecture 10, slide 26 is vl and vr. Combinations of each wheel's velocities
             
-            R = 1
-            L = 2
-            max_speed = 10
+            R = 0.1
+            L = 0.4
+            max_speed = 20
 
             speeds = []
 
@@ -192,7 +221,9 @@ class AStar():
                 y_dot = (R/2)*(vr + vl)*sin(theta)
                 y = state.y + (y_dot * timestep)
 
+                print(x_dot, y_dot, theta_dot)
                 neighbor_state = State(x, y, theta, velocity= Point(x_dot, y_dot))
+                neighbor_state.parent = state
                 neighbors.append(neighbor_state)
             
             return neighbors
