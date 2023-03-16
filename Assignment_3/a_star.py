@@ -182,7 +182,7 @@ class AStar():
                 # calculating velocity and position with each speed combo
                 vr, vl = speed[0], speed[1]
                             
-                theta_dot = (R/L)*(vr + vl)
+                theta_dot = (R/L)*(vr - vl)
                 theta =  state.theta + (theta_dot*timestep) 
 
                 x_dot = (R/2)*(vr + vl)*cos(theta)
