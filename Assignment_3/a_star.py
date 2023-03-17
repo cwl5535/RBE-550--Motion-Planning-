@@ -27,11 +27,11 @@ class State():
 
     def distance_to(self, to) -> float:
         if isinstance(to, tuple):
-            delta_x = (self.x - to[0])
-            delta_y = (self.x - to[1])
+            delta_x = self.x - to[0]
+            delta_y = self.x - to[1]
         else:
-            delta_x = (self.x - to.x)
-            delta_y = (self.y - to.y)
+            delta_x = self.x - to.x
+            delta_y = self.y - to.y
         dist = sqrt((delta_x**2) + (delta_y**2))
         return dist
     
@@ -43,7 +43,7 @@ class State():
 
         # Steering Cost
 
-        steering_cost = 2*abs(self.theta - parent.theta)
+        steering_cost = abs(self.theta - parent.theta)
 
         total_cost = dist_cost + steering_cost
 
@@ -197,7 +197,7 @@ class AStar():
             
             R = 0.1
             L = 0.4
-            max_speed = 20
+            max_speed = 5
 
             speeds = []
 
