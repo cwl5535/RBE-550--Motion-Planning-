@@ -27,7 +27,7 @@ def create_world(world_type: str, world_size=120) -> Tuple[World, List[Tuple], L
 
         parked_car1 = RectangleBuilding(Point(25, 10), Point(20,10), 'red')
         parked_car2 = RectangleBuilding(Point(80,10), Point(20,10), 'red')
-        obstacle = RectangleBuilding(Point(70,70), Point(40,25), 'black')
+        obstacle = RectangleBuilding(Point(90,70), Point(40,25), 'black')
 
         # w.add(car)
         w.add(parked_car1)
