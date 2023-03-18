@@ -3,11 +3,14 @@ from a_star import AStar, State
 import time
 from agents import Car
 from geometry import Point
+from math import pi
 
 world_size = 120
 world, obstacle_x_ranges, obstacle_y_ranges = create_world("skid", world_size)
 
-car = Car(Point(15, 110), 0, color = "green")
+car_center = (20,100)
+car_angle = 0  # This is in radians
+car = Car(Point(car_center[0], car_center[1]), car_angle, color = "green")
 world.add(car)
 
 # sim test
@@ -19,5 +22,5 @@ world.add(car)
 
 # TODO need to figure out why angles are everywhere, how the steering in CARLO works
 # TODO Wheels aren't given the ability to drive in reverse, only positive values
-planner = AStar(car, obstacle_x_ranges, obstacle_y_ranges, world, (30,90,0), (30,60,0))
+planner = AStar(car, obstacle_x_ranges, obstacle_y_ranges, world, (car_center[0], car_center[1],car_angle), (car_center[0]+5, car_center[1],car_angle + (pi/2)))
 planner.plan()
