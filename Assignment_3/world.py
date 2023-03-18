@@ -11,6 +11,9 @@ class World:
         self.dt = dt # simulation time step
         self.visualizer = Visualizer(width, height, ppm=ppm)
         
+        
+        self.size = (width, height)
+        
     def add(self, entity: Entity):
         if entity.movable:
             self.dynamic_agents.append(entity)
