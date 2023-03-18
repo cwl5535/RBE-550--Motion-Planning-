@@ -28,11 +28,11 @@ class State():
     def distance_to(self, to) -> float:
         # Used to calculate the Euclidean distance between one node to another
         if isinstance(to, tuple):
-            delta_x = (self.x - to[0])
-            delta_y = (self.x - to[1])
+            delta_x = self.x - to[0]
+            delta_y = self.x - to[1]
         else:
-            delta_x = (self.x - to.x)
-            delta_y = (self.y - to.y)
+            delta_x = self.x - to.x
+            delta_y = self.y - to.y
         dist = sqrt((delta_x**2) + (delta_y**2))
         return dist
     
