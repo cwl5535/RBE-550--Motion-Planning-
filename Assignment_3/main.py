@@ -12,16 +12,6 @@ car_angle = 0 # This is in radians
 car = Car(Point(car_center[0], car_center[1]), car_angle, color = "green")
 world.add(car)
 
-# sim test
-# for i in range(500): 
-#     world.tick()
-#     world.render()
-#     time.sleep(0.1/4)
-# world.close()
-
-# TODO need to figure out why angles are everywhere, how the steering in CARLO works
-# TODO Wheels aren't given the ability to drive in reverse, only positive values
-
 planner = AStar(car,
                 obstacle_x_ranges, obstacle_y_ranges, 
                 world,

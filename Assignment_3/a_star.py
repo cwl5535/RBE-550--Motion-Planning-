@@ -77,68 +77,47 @@ class AStar():
     def add_to_closed(self, state):
         self.closed.append(state)
 
-    def simulate(self, last_state, car, world):
-        vels = []
-        steering = []
-        state_to_simulate = last_state
-
-        # creates velocities and steering in the order from start -> goal
-        while state_to_simulate != self.start: 
-            vels.insert(0, state_to_simulate.velocity)
-            steering.insert(0, state_to_simulate.theta)
-            state_to_simulate = state_to_simulate.parent
-            # car.velocity = state_to_simulate.velocity
-            # car.inputSteering = state_to_simulate.theta
-        
-        vels.insert(0, self.start.velocity)
-        steering.insert(0, self.start.theta)
-        print(len(vels), len(steering))
+    def simulate(self, path_x, path_y, path_theta):
 
         print("Beginning Simulation...")
         time.sleep(5.)
+        
+        for i in range(len(path_x)): 
+            self.car.center = Point(path_x[i], path_y[i])
+            self.car.heading = path_theta[i]
+            self.world.tick()
+            self.world.render()
+            time.sleep(0.1/2)
 
-        # TODO Change this so that steering is changing every 
-
-        # while car.center is not self.goal[:2]:
-        #     if distance to goal is getting close: 
-        #         brake 
-
-
-        for state in range(len(vels)):
-            car.velocity = vels[state]
-            car.inputSteering = steering[state]
-            # print(f"Velocity: {car.velocity}, Steering Angle: {car.inputSteering}")
-            print(f"Vehicle Position: {car.center.x, car.center.y}")
-            print(f"Vehicle Orientation: {car.heading} radians\n\n")
-            world.tick()
-            world.render()
-            time.sleep(0.1/0.5)
         print("Holding Simulation for 10 seconds...")
         time.sleep(10.)
-        world.close()
+        self.world.close()
     
     def show_path(self, last_state):
         path_x = []
         path_y = []
+        path_theta = []
         state_to_plot = last_state
         while state_to_plot != self.start:
             x = state_to_plot.x
             y = state_to_plot.y
+            theta = state_to_plot.theta
             path_x.insert(0,x)
             path_y.insert(0,y)
+            path_theta.insert(0,theta)
             state_to_plot = state_to_plot.parent
         path_x.insert(0,self.start.x)
         path_y.insert(0,self.start.y)
+        path_theta.insert(0, self.start.theta)
 
         plt.plot(path_x, path_y, linewidth = 4)
         plt.plot(self.start.x, self.start.y, color = "red", marker = "o", markersize = 8)
         plt.plot(self.goal[0], self.goal[1], color = "green", marker = "o", markersize = 8)
         plt.legend(["Path", "Start", "Goal"])
-        # plt.text(self.start.x, self.start.y, "Starting Point")
-        # plt.text(self.goal[0], self.goal[1], "Goal Point")
 
         plt.title("Assignment 3 (RBE 550): Valet"), plt.xlim((0,self.world.size[0])), plt.ylim((0,self.world.size[1]))
         plt.show()
+        return path_x, path_y, path_theta
 
     def collision_check(self, state) -> bool:
         
@@ -174,15 +153,12 @@ class AStar():
         # test 
         while len(self.open) > 0 and (not goal_found):
             idx += 1 
-            print(idx)
+            # print(idx)
             if idx == 5000: 
-                self.show_path(q)
+                path_x, path_y, path_theta = self.show_path(q)
+                self.simulate(path_x, path_y, path_theta)
                 break
             print(f"x: {q.x}, y: {q.y}, theta: {q.theta}")
-            # print(f"Open list has {len(self.open)} states")
-
-            # current = self.open[0]
-            # self.simulate(q, self.car, self.world)
             self.open.pop(self.open.index(q))
             self.add_to_closed(q)
             # search for the surrounding neighbors
@@ -194,8 +170,8 @@ class AStar():
             for neighbor in neighbors:
                 if self.goal_check(neighbor):
                     print("Goal found!")
-                    self.show_path(q)
-                    self.simulate(q, self.car, self.world)
+                    path_x, path_y, path_theta = self.show_path(q)
+                    self.simulate(path_x, path_y, path_theta)
                     goal_found = True
                     break
                 elif neighbor not in self.closed:
@@ -228,11 +204,14 @@ class AStar():
             self.add_to_closed(state)
     
     def goal_check(self, state: State):
-        current_state = (state.x, state.y, state.theta) 
-
-        if current_state == self.goal: 
-            return True
+        # current_state = (state.x, state.y, state.theta) 
+        current_state = (round(state.x,1), round(state.y,1))
+        # if current_state == self.goal: 
+        #     return True
         
+        if current_state == (self.goal[0], self.goal[1]): 
+            return True
+
         return False
 
     def exceeds_world_limits(self, x, y) -> bool: 
@@ -297,9 +276,5 @@ class AStar():
         else:
             return 0
 
-# if __name__ == "__main__":
-#     planner = AStar((0,0,0), (30, 35, 0))
-#     planner.plan()
-        
 
 
