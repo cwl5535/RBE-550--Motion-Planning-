@@ -21,7 +21,7 @@ class State():
         self.f = f
         self.x = x
         self.y = y
-        self.theta = theta # possible states are 0 to 2pi, in 15 degree intervals
+        self.theta = theta # has to be in radians
         self.parent = None
         self.velocity = velocity
 
@@ -44,7 +44,7 @@ class State():
 
         # Steering Cost
 
-        steering_cost = abs(self.theta - parent.theta) % (2*pi)
+        steering_cost = 2*(abs(self.theta - parent.theta) % (2*pi))
 
         total_cost = dist_cost + steering_cost
 
@@ -77,22 +77,30 @@ class AStar():
         self.closed.append(state)
 
     def simulate(self, last_state, car, world):
-        # vels = []
-        # steering = []
-
+        vels = []
+        steering = []
         state_to_simulate = last_state
+
+        # creates velocities and steering in the order from start -> goal
         while state_to_simulate != self.start: 
-            car.velocity = last_state.velocity
-            car.inputSteering = last_state.theta
+            vels.insert(0, state_to_simulate.velocity)
+            steering.insert(0, state_to_simulate.theta)
+            state_to_simulate = state_to_simulate.parent
+            # car.velocity = state_to_simulate.velocity
+            # car.inputSteering = state_to_simulate.theta
+        
+        vels.insert(0, self.start.velocity)
+        steering.insert(0, self.start.theta)
+        print(len(vels), len(steering))
+
+        for state in range(len(vels)):
+            car.velocity = vels[state]
+            car.inputSteering = steering[state]
+            print(f"Velocity: {car.velocity}, Steering Angle: {car.inputSteering}")
             world.tick()
             world.render()
             time.sleep(0.1/4)
-            print(f"Velocity: {car.velocity}, Steering Angle: {car.inputSteering}")
-            #vels.append(car.velocity)
-            # steering.append(car.inputSteering)
         world.close()
-
-
     
     def show_path(self, last_state):
         path_x = []
@@ -101,11 +109,11 @@ class AStar():
         while state_to_plot != self.start:
             x = state_to_plot.x
             y = state_to_plot.y
-            path_x.append(x)
-            path_y.append(y)
+            path_x.insert(0,x)
+            path_y.insert(0,y)
             state_to_plot = state_to_plot.parent
-        path_x.append(self.start.x)
-        path_y.append(self.start.y)
+        path_x.insert(0,self.start.x)
+        path_y.insert(0,self.start.y)
 
         plt.plot(path_x, path_y)
         plt.title("Assignment 3 (RBE 550): Valet"), plt.xlim((0,120)), plt.ylim((0,120))
@@ -138,17 +146,16 @@ class AStar():
         self.closed = []
 
         self.add_to_open(self.start)
-
-
         q = self.start
-        goal_found = False
-        idx = 0
 
-        while len(self.open) > 0 or (not goal_found):
-            idx += 1 
-            if idx == 500: 
-                self.show_path(q)
-                break
+        goal_found = False
+        # idx = 0
+
+        while len(self.open) > 0 and (not goal_found):
+            # idx += 1 
+            # if idx == 5000: 
+            #     self.show_path(q)
+            #     break
             print(f"x: {q.x}, y: {q.y}, theta: {q.theta}")
             # print(f"Open list has {len(self.open)} states")
 
@@ -182,20 +189,6 @@ class AStar():
 
 
         print("Goal has been found, timeout has been reached, or open list is empty")
-            # for neighbor in neighbors: 
-            #     if neighbor not in self.closed:
-                    
-                    
-            #         if self.collision_check(neighbor):
-            #             continue
-            #         tentative_g = current.calculate_g(neighbor)
-
-            #         if tentative_g < neighbor.g:
-            #             neighbor.g = tentative_g
-            #             neighbor.parent = current
-            #             neighbor.h = neighbor.calculate_h(self.goal)
-            #             neighbor.f = neighbor.calculate_f()
-            #             self.add_to_open(neighbor)
             
 
 
@@ -246,7 +239,9 @@ class AStar():
                 vr, vl = speed[0], speed[1]
                         
                 theta_dot = (R/L)*(vr - vl)
-                theta =  radians(state.theta + (theta_dot*timestep))
+                theta =  state.theta + (theta_dot*timestep)  # should already be in radians
+
+                theta = theta % (2*pi)
 
                 x_dot = (R/2)*(vr + vl)*cos(theta)
                 x = state.x + (x_dot * timestep)
@@ -255,7 +250,7 @@ class AStar():
                 y_dot = (R/2)*(vr + vl)*sin(theta)
                 y = state.y + (y_dot * timestep)
 
-                # print(x_dot, y_dot, theta_dot)
+                # print(f" (x_dot, y_dot, theta_dot): {x_dot, y_dot, theta_dot}")
 
                 if self.exceeds_world_limits(x, y): 
                     continue

@@ -1,6 +1,5 @@
 from create_world import create_world
 from a_star import AStar, State
-import time
 from agents import Car
 from geometry import Point
 from math import pi
@@ -22,5 +21,11 @@ world.add(car)
 
 # TODO need to figure out why angles are everywhere, how the steering in CARLO works
 # TODO Wheels aren't given the ability to drive in reverse, only positive values
-planner = AStar(car, obstacle_x_ranges, obstacle_y_ranges, world, (car_center[0], car_center[1],car_angle), (car_center[0]+5, car_center[1],car_angle + (pi/2)))
+
+planner = AStar(car,
+                obstacle_x_ranges, obstacle_y_ranges, 
+                world,
+                (car_center[0], car_center[1],car_angle),
+                (car_center[0]+50, car_center[1],car_angle)
+                )
 planner.plan()
