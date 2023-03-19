@@ -153,7 +153,7 @@ class AStar():
 
         goal_found = False
         idx = 0
-
+        # test 
         while len(self.open) > 0 and (not goal_found):
             idx += 1 
             if idx == 5000: 
