@@ -30,7 +30,7 @@ class State():
         # Used to calculate the Euclidean distance between one node to another
         if isinstance(to, tuple):
             delta_x = self.x - to[0]
-            delta_y = self.x - to[1]
+            delta_y = self.y - to[1]
         else:
             delta_x = self.x - to.x
             delta_y = self.y - to.y
@@ -94,14 +94,26 @@ class AStar():
         steering.insert(0, self.start.theta)
         print(len(vels), len(steering))
 
+        print("Beginning Simulation...")
         time.sleep(5.)
+
+        # TODO Change this so that steering is changing every 
+
+        # while car.center is not self.goal[:2]:
+        #     if distance to goal is getting close: 
+        #         brake 
+
+
         for state in range(len(vels)):
             car.velocity = vels[state]
             car.inputSteering = steering[state]
-            print(f"Velocity: {car.velocity}, Steering Angle: {car.inputSteering}")
+            # print(f"Velocity: {car.velocity}, Steering Angle: {car.inputSteering}")
+            print(f"Vehicle Position: {car.center.x, car.center.y}")
+            print(f"Vehicle Orientation: {car.heading} radians\n\n")
             world.tick()
             world.render()
-            time.sleep(0.1/2)
+            time.sleep(0.1/0.5)
+        print("Holding Simulation for 10 seconds...")
         time.sleep(10.)
         world.close()
     
@@ -118,8 +130,14 @@ class AStar():
         path_x.insert(0,self.start.x)
         path_y.insert(0,self.start.y)
 
-        plt.plot(path_x, path_y)
-        plt.title("Assignment 3 (RBE 550): Valet"), plt.xlim((0,120)), plt.ylim((0,120))
+        plt.plot(path_x, path_y, linewidth = 4)
+        plt.plot(self.start.x, self.start.y, color = "red", marker = "o", markersize = 8)
+        plt.plot(self.goal[0], self.goal[1], color = "green", marker = "o", markersize = 8)
+        plt.legend(["Path", "Start", "Goal"])
+        # plt.text(self.start.x, self.start.y, "Starting Point")
+        # plt.text(self.goal[0], self.goal[1], "Goal Point")
+
+        plt.title("Assignment 3 (RBE 550): Valet"), plt.xlim((0,self.world.size[0])), plt.ylim((0,self.world.size[1]))
         plt.show()
 
     def collision_check(self, state) -> bool:
@@ -156,6 +174,7 @@ class AStar():
         # test 
         while len(self.open) > 0 and (not goal_found):
             idx += 1 
+            print(idx)
             if idx == 5000: 
                 self.show_path(q)
                 break
@@ -188,7 +207,16 @@ class AStar():
                         q = neighbor
                         previous_f = neighbor.f
 
-            self.add_to_open(q)
+                # for node in self.open:  # checking the open list
+                #     if (q.x, q.y, q.theta) == (node.x, node.y, node.theta) or (node.f < q.f):
+                #         continue
+
+                # for node in self.closed:  # checking the closed list
+                #     if (q.x, q.y, q.theta) == (node.x, node.y, node.theta) or (node.f < q.f):
+                #         continue
+                
+                self.add_to_open(q)
+
 
 
         print("Goal has been found, timeout has been reached, or open list is empty")
@@ -224,8 +252,8 @@ class AStar():
             # what are all possible options to go to? I need to vary my position (x,y, theta) with the velocity equations
             # my inputs are for lecture 10, slide 26 is vl and vr. Combinations of each wheel's velocities
             
-            R = 1
-            L = 4
+            R = 1 # wheel radius
+            L = 4  # distance between wheels
 
             max_speed = 5
 
@@ -236,6 +264,7 @@ class AStar():
                 speeds.append((max_speed, speed))
             
             speeds.sort()
+            speeds.pop()
             
             for speed in speeds: 
                 # calculating velocity and position with each speed combo
@@ -244,14 +273,14 @@ class AStar():
                 theta_dot = (R/L)*(vr - vl)
                 theta =  state.theta + (theta_dot*timestep)  # should already be in radians
 
-                theta = theta % (2*pi)
+                theta = round(theta % (2*pi),2)
 
                 x_dot = (R/2)*(vr + vl)*cos(theta)
-                x = state.x + (x_dot * timestep)
+                x = round(state.x + (x_dot * timestep),2)
                 
 
                 y_dot = (R/2)*(vr + vl)*sin(theta)
-                y = state.y + (y_dot * timestep)
+                y = round(state.y + (y_dot * timestep),2)
 
                 # print(f" (x_dot, y_dot, theta_dot): {x_dot, y_dot, theta_dot}")
 
