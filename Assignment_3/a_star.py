@@ -22,6 +22,7 @@ class State():
         self.x = x
         self.y = y
         self.theta = theta # has to be in radians
+        self.position = (x, y)
         self.parent = None
         self.velocity = velocity
 
@@ -93,13 +94,15 @@ class AStar():
         steering.insert(0, self.start.theta)
         print(len(vels), len(steering))
 
+        time.sleep(5.)
         for state in range(len(vels)):
             car.velocity = vels[state]
             car.inputSteering = steering[state]
             print(f"Velocity: {car.velocity}, Steering Angle: {car.inputSteering}")
             world.tick()
             world.render()
-            time.sleep(0.1/4)
+            time.sleep(0.1/2)
+        time.sleep(10.)
         world.close()
     
     def show_path(self, last_state):
@@ -149,13 +152,13 @@ class AStar():
         q = self.start
 
         goal_found = False
-        # idx = 0
+        idx = 0
 
         while len(self.open) > 0 and (not goal_found):
-            # idx += 1 
-            # if idx == 5000: 
-            #     self.show_path(q)
-            #     break
+            idx += 1 
+            if idx == 5000: 
+                self.show_path(q)
+                break
             print(f"x: {q.x}, y: {q.y}, theta: {q.theta}")
             # print(f"Open list has {len(self.open)} states")
 

@@ -26,6 +26,6 @@ planner = AStar(car,
                 obstacle_x_ranges, obstacle_y_ranges, 
                 world,
                 (car_center[0], car_center[1],car_angle),
-                (car_center[0]+50, car_center[1],car_angle)
+                (car_center[0], car_center[1]-50,car_angle - pi/2)
                 )
 planner.plan()
