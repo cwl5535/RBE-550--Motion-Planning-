@@ -4,18 +4,25 @@ from agents import Car
 from geometry import Point
 from numpy import pi
 
-world_size = 120
-world, obstacle_x_ranges, obstacle_y_ranges = create_world("skid", world_size)
+if __name__ == "__main__":
 
-car_center = (20,80)
-car_angle = 0 # This is in radians
-car = Car(Point(car_center[0], car_center[1]), car_angle, color = "green")
-world.add(car)
+    world_size = 120
+    world, obstacle_x_ranges, obstacle_y_ranges = create_world("skid", world_size)
 
-planner = AStar(car,
-                obstacle_x_ranges, obstacle_y_ranges, 
-                world,
-                (car_center[0], car_center[1],car_angle),
-                (car_center[0]+25, car_center[1]-50,car_angle - round(pi/2,2))
-                )
-planner.plan()
+    car_center = (20,100)
+    car_angle = -pi/2 # This is in radians
+    car = Car(Point(car_center[0], car_center[1]), car_angle, color = "green")
+    world.add(car)
+
+    parking_spot = (55,15,0)
+    # parking_spot = (90,60,0) # collision test, this is where one of the obstacles is
+
+
+    planner = AStar(car = car,
+                    obstacles_x =  obstacle_x_ranges, 
+                    obstacles_y = obstacle_y_ranges, 
+                    world = world,
+                    start = (car_center[0], car_center[1],car_angle),
+                    goal= parking_spot
+                    )
+    planner.plan()

@@ -45,7 +45,7 @@ class State():
 
         # Steering Cost
 
-        steering_cost = 2*(abs(self.theta - parent.theta) % (2*pi))
+        steering_cost = (abs(self.theta - parent.theta) % (2*pi))
 
         total_cost = dist_cost + steering_cost
 
@@ -87,7 +87,7 @@ class AStar():
             self.car.heading = path_theta[i]
             self.world.tick()
             self.world.render()
-            time.sleep(0.1/2)
+            time.sleep(0.1/0.5)
 
         print("Holding Simulation for 10 seconds...")
         time.sleep(10.)
@@ -119,16 +119,16 @@ class AStar():
         plt.show()
         return path_x, path_y, path_theta
 
-    def collision_check(self, state) -> bool:
+    def collision_check(self, x, y) -> bool:
         
-        for index in range(len(self.obstacles_x)):
+        buffer = 15 # to account for car size
+        for index in range(len(self.obstacles_x)):  # for loop allows for checking every obstacle in the obstacle list, since each obstacle boundary is a tuple
             x_left = self.obstacles_x[index][0]  # indexing a tuple 
             x_right = self.obstacles_x[index][1]
             y_left = self.obstacles_y[index][0]
             y_right = self.obstacles_y[index][1]
 
-            if (round(state.x) in range(x_left, x_right+1)) and (round(state.y) in range(y_left, y_right + 1)):
-                self.add_to_closed(state)  # state causes collision and is added to closed as a result
+            if (round(x) in range(x_left-buffer, x_right + 1 + buffer)) and (round(y) in range(y_left - buffer, y_right + 1 + buffer)):
                 print("Collision Occurred")
                 return True
         return False
@@ -141,7 +141,6 @@ class AStar():
         self.start.h = self.start.calculate_h(self.goal)
         self.start.f = self.start.calculate_f()
 
-        # self.add_to_open(self.start)
         self.open = []
         self.closed = []
 
@@ -150,30 +149,42 @@ class AStar():
 
         goal_found = False
         idx = 0
-        # test 
+ 
         while len(self.open) > 0 and (not goal_found):
+
+            # Loop Timeout 
             idx += 1 
             # print(idx)
             if idx == 5000: 
                 path_x, path_y, path_theta = self.show_path(q)
                 self.simulate(path_x, path_y, path_theta)
+                print("Loop limit has been achieved!")
                 break
-            print(f"x: {q.x}, y: {q.y}, theta: {q.theta}")
+            if idx % 50 == 0: 
+                print(f"x: {q.x}, y: {q.y}, theta: {q.theta}")
+
+            # Main Algorithm
+
             self.open.pop(self.open.index(q))
             self.add_to_closed(q)
+
             # search for the surrounding neighbors
  
             neighbors = self.get_neighbors(q, timestep = 1)
 
-            previous_f = neighbors[0].f
+            previous_f = neighbors[0].f   # setting the first generated neighbor's f as the baseline for f for later comparison
 
             for neighbor in neighbors:
+
+                # Check to see if the goal has been achieved 
                 if self.goal_check(neighbor):
                     print("Goal found!")
                     path_x, path_y, path_theta = self.show_path(q)
                     self.simulate(path_x, path_y, path_theta)
                     goal_found = True
                     break
+
+
                 elif neighbor not in self.closed:
                     neighbor.g = neighbor.calculate_g(neighbor.parent)
                     neighbor.h = neighbor.calculate_h(self.goal)
@@ -263,7 +274,8 @@ class AStar():
 
                 # print(f" (x_dot, y_dot, theta_dot): {x_dot, y_dot, theta_dot}")
 
-                if self.exceeds_world_limits(x, y): 
+                if self.exceeds_world_limits(x, y) or self.collision_check(x, y): 
+                    # if either condition happens, we avoid even creating a State for invalid coordinates
                     continue
                 else:
                     neighbor_state = State(x, y, theta, velocity= Point(x_dot, y_dot))
