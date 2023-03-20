@@ -6,8 +6,8 @@ from numpy import pi
 
 if __name__ == "__main__":
 
-    vehicle = "skid"
-    start = (20, 100, -pi/2)  # heading angle must be in radians
+    vehicle = "car"
+    start = (20, 100, 0)  # heading angle must be in radians
     parking_spot = (55,15,0)
     # parking_spot = (90,60,0) # collision test, this is where one of the obstacles is    
 
