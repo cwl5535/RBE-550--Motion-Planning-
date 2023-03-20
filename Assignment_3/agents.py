@@ -4,19 +4,19 @@ from geometry import Point
 # For colors, we use tkinter colors. See http://www.science.smith.edu/dftwiki/index.php/Color_Charts_for_TKinter
 
 class Car(RectangleEntity):
-    def __init__(self, center: Point, heading: float, vehicle_type: str  ,color: str = 'red'):
+    def __init__(self, center: Point, heading: float, vehicle_type: str):
         size = Point(20., 10.)  # changed from (4., 2.) on 3-6-23
         movable = True
         friction = 0.06
         super(Car, self).__init__(center, heading, size, movable, friction)
-        self.color = color
+        # self.color = color
         self.collidable = True
         self.vehicle_type = vehicle_type
-        if self.vehicle_type == "skid": 
+        if vehicle_type == "skid": 
             self.color = "green"
-        elif self.vehicle_type == "car":
-            self.color == "red"
-        elif self.vehicle_type == "truck": 
+        elif vehicle_type == "car":
+            self.color == "blue"
+        elif vehicle_type == "truck": 
             self.color == "gray"
             
         
