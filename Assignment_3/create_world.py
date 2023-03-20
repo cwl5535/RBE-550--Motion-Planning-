@@ -6,7 +6,7 @@ from agents import RectangleBuilding, Car
 from typing import List, Tuple
 
 def create_world(world_type: str, world_size=120) -> Tuple[World, List[Tuple], List[Tuple]] :
-    if world_type == "skid":
+    if world_type == "skid" or world_type == "car":
 
         dt = 0.1
         w = World(dt, width = world_size, height = world_size, ppm = 6)
