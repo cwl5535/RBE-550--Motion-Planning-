@@ -6,23 +6,26 @@ from numpy import pi
 
 if __name__ == "__main__":
 
-    world_size = 120
-    world, obstacle_x_ranges, obstacle_y_ranges = create_world("skid", world_size)
+    vehicle = "skid"
+    start = (20, 100, -pi/2)  # heading angle must be in radians
+    parking_spot = (55,15,0)
+    # parking_spot = (90,60,0) # collision test, this is where one of the obstacles is    
 
-    car_center = (20,100)
-    car_angle = -pi/2 # This is in radians
-    car = Car(Point(car_center[0], car_center[1]), car_angle, color = "green")
+    world_size = 120
+    world, obstacle_x_ranges, obstacle_y_ranges = create_world(vehicle, world_size)
+
+
+    car = Car(Point(start[0], start[1]), start[2], vehicle_type= vehicle)
     world.add(car)
 
-    parking_spot = (55,15,0)
-    # parking_spot = (90,60,0) # collision test, this is where one of the obstacles is
+
 
 
     planner = AStar(car = car,
                     obstacles_x =  obstacle_x_ranges, 
                     obstacles_y = obstacle_y_ranges, 
                     world = world,
-                    start = (car_center[0], car_center[1],car_angle),
+                    start = start,
                     goal= parking_spot
                     )
     planner.plan()
