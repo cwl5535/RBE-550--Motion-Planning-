@@ -1,4 +1,4 @@
-from math import sqrt, pi, inf, radians, cos, sin
+from math import sqrt, pi, inf, radians, cos, sin, tan
 from typing import List, Tuple
 from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
@@ -195,8 +195,8 @@ class AStar():
                 self.simulate(path_x, path_y, path_theta)
                 print("Loop limit has been achieved!")
                 break
-            # if idx % 1000 == 0: 
-            #     print(f"x: {q.x}, y: {q.y}, theta: {q.theta}")
+            if idx % 10 == 0: 
+                print(f"x: {q.x}, y: {q.y}, theta: {q.theta}")
 
             # Main Algorithm
 
@@ -320,38 +320,49 @@ class AStar():
                     neighbors.append(neighbor_state)
         elif self.car.vehicle_type == "car":
             neighbors = []
+            combos = []
 
             # what are all possible options to go to? I need to vary my position (x,y, theta) with the velocity equations
             # my inputs are for lecture 10, slide 26 is vl and vr. Combinations of each wheel's velocities
             
-            R = 1 # wheel radius
-            L = 4  # distance between wheels
+            L = 2.5  # distance between rear and front axle
 
-            max_speed = 5
+            max_speed = 1
 
-            speeds = []
 
-            for speed in range(-max_speed, max_speed+1): # looping to get all possible speed combos for the two wheels
-                speeds.append((speed, max_speed))
-                speeds.append((max_speed, speed))
-            
-            speeds.sort()
-            speeds.pop()
-            
-            for speed in speeds: 
+
+            us_values = [-5,-4,-3,-2,-1, 0, 1,2,3,4,5]
+            uphi_values = [-pi/2, -pi/4, 0, pi/4, pi/2]  # u phi is the heading angle, theta is the angle the the whole car is transformed to as a result of phi
+
+            for uphi in uphi_values: 
+                combos.append((-5, uphi))
+                combos.append((-4, uphi))
+                combos.append((-3, uphi))
+                combos.append((-2, uphi))                
+                combos.append((-1, uphi))
+                combos.append(( 0, uphi))
+                combos.append(( 1, uphi))
+                combos.append(( 2, uphi))
+                combos.append(( 3, uphi))                
+                combos.append(( 4, uphi))
+                combos.append(( 5, uphi))
+         
+            combos.sort()
+
+            for combo in combos: 
                 # calculating velocity and position with each speed combo
-                vr, vl = speed[0], speed[1]
+                us, u_phi = combo[0], combo[1]
                         
-                theta_dot = (R/L)*(vr - vl)
+                theta_dot = (us / L) * tan(u_phi)
                 theta =  state.theta + (theta_dot*timestep)  # should already be in radians
 
                 theta = round(theta % (2*pi),2)
 
-                x_dot = (R/2)*(vr + vl)*cos(theta)
+                x_dot = us*cos(theta)
                 x = round(state.x + (x_dot * timestep),2)
                 
 
-                y_dot = (R/2)*(vr + vl)*sin(theta)
+                y_dot = us*sin(theta)
                 y = round(state.y + (y_dot * timestep),2)
 
                 # print(f" (x_dot, y_dot, theta_dot): {x_dot, y_dot, theta_dot}")
@@ -361,8 +372,8 @@ class AStar():
                     continue
                 else:
                     neighbor_state = State(x, y, theta, velocity= Point(x_dot, y_dot))
-                    neighbor_state.vr = vr
-                    neighbor_state.vl = vl
+                    neighbor_state.us = us
+                    neighbor_state.uphi = uphi
                     neighbor_state.parent = state
                     neighbors.append(neighbor_state)
         elif self.car.vehicle_type == "truck":
