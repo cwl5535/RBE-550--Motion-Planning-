@@ -1,22 +1,34 @@
 from create_world import create_world
 from a_star import AStar, State
-import time
 from agents import Car
 from geometry import Point
+from numpy import pi
 
-world_size = 120
-world, obstacle_x_ranges, obstacle_y_ranges = create_world("skid", world_size)
+if __name__ == "__main__":
 
-car = Car(Point(15, 110), 0, color = "green")
-world.add(car)
+    vehicle = "skid"
+    start = (20, 100, -pi/2)  # heading angle must be in radians
+    parking_spot = (55,15,0)
 
-# sim test
-# for i in range(500): 
-#     world.tick()
-#     world.render()
-#     time.sleep(0.1/4)
-# world.close()
 
-# TODO need to figure out why angles are everywhere, how the steering in CARLO works
-planner = AStar(car, obstacle_x_ranges, obstacle_y_ranges, world, (30,90,0), (30,60,0))
-planner.plan()
+    # parking_spot = (25,100, 0)
+    # parking_spot = (90,60,0) # collision test, this is where one of the obstacles is    
+
+    world_size = 120
+    world, obstacle_x_ranges, obstacle_y_ranges = create_world(vehicle, world_size)
+
+
+    car = Car(Point(start[0], start[1]), start[2], vehicle_type= vehicle)
+    world.add(car)
+
+
+
+
+    planner = AStar(car = car,
+                    obstacles_x =  obstacle_x_ranges, 
+                    obstacles_y = obstacle_y_ranges, 
+                    world = world,
+                    start = start,
+                    goal= parking_spot
+                    )
+    planner.plan()

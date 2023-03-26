@@ -1,10 +1,12 @@
-# RBE 550, Assignment 3
+# RBE 550, Assignment 3 Valet
 # Author: Colton Layhue
 
-## Part 1 - Skid Drive Delivery Robot (Following Differential Drive Robot)
-Currently follows A* workflow, where 20 neighbors of the current node are identified. The number of neighbors is determined by the `max_speed` value given to each of the wheels. These neighbors are each represented as a `State` object and have a cost attribute. Costs are determined using a the standard A* cost function, where cost for distance to next `State`, x, is affected by the Euclidean distance as well as the steering required. 
 
+## Running the Code
+Navigate to the `main.py` file. Within, there are 3 user inputs, `vehicle`, `start`, and `parking_spot`: 
 
-## Part 2 - Regular Truck 
+* `vehicle`: `string` - This can be one of three options: ["skid", "car", "truck"]. "Skid" for the delivery robot, "car" for the police car, and "truck" for the truck and trailer
 
-## Part 3 - Truck with Trailer
+* `start`: `tuple` - This is the starting point for the vehicle in the format (x, y, theta) where theta is the orientation of the vehicle in radians. 
+
+* `parking_spot`: `tuple` - This is the goal position for the vehicle. 

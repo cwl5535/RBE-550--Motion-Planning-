@@ -6,7 +6,7 @@ from agents import RectangleBuilding, Car
 from typing import List, Tuple
 
 def create_world(world_type: str, world_size=120) -> Tuple[World, List[Tuple], List[Tuple]] :
-    if world_type == "skid":
+    if world_type == "skid" or world_type == "car":
 
         dt = 0.1
         w = World(dt, width = world_size, height = world_size, ppm = 6)
@@ -27,7 +27,7 @@ def create_world(world_type: str, world_size=120) -> Tuple[World, List[Tuple], L
 
         parked_car1 = RectangleBuilding(Point(25, 10), Point(20,10), 'red')
         parked_car2 = RectangleBuilding(Point(80,10), Point(20,10), 'red')
-        obstacle = RectangleBuilding(Point(70,70), Point(40,25), 'black')
+        obstacle = RectangleBuilding(Point(90,70), Point(40,25), 'black')
 
         # w.add(car)
         w.add(parked_car1)
