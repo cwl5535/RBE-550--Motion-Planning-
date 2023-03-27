@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import random
+from typing import Tuple
 
 """
 Author: Colton Layhue
@@ -64,19 +65,54 @@ def show_obstacle_field(environment):
 
 
 
-def create_obstacle_field(environment, goal_coverage):
+def create_obstacle_field(environment, goal_coverage, obstacle_square_unit = 1) -> Tuple[np.ndarray, float]:
 
     """
     Arguments:  
         environment - `numpy array` , initial environment to create obstacle field onto. 
         goal_coverage - `float` , decimal value of desired coverage for obstacle field i.e. 0.7 means 70%. 
+        obstacle_square_unit - `int` , value for the dimension of each block that makes up the tetrominoes. If each block is to be 5 units tall, then this value is 5. 
     Description: 
     """
 
-    tetrominoes = [np.ones((4,1)), 
-               np.array([[1,1],[0,1],[0,1]]), 
-               np.array([[1,0],[1,1],[0,1]]),
-               np.array([[0,1],[1,1],[0,1]])]
+
+ # TODO this isn't expanding the tetrominoes in the heighth
+
+    if obstacle_square_unit > 1: 
+        tetrominoes = [
+            
+                np.ones((4,1)), 
+                np.array([[1,1],
+                            [0,1]
+                            [0,1]]),
+
+                np.array([  [1,0]
+                            [1,1]
+                            [0,1]]),
+
+                np.array([  [0,1],
+                            [1,1],
+                            [0,1]])
+                    
+                    ]
+    else: 
+            tetro_1 = np.ones((4*obstacle_square_unit,1*obstacle_square_unit))
+            tetro_2 = 
+            tetro_3 = 
+            tetro_4 = 
+            tetrominoes = [tetro_1, 
+            [np.repeat(np.array([[1,1]]), obstacle_square_unit),
+                        np.repeat(np.array([[0,1]]), obstacle_square_unit),
+                        np.repeat(np.array([[0,1]]), obstacle_square_unit)], 
+            [np.repeat(np.array([[1,0]]), obstacle_square_unit),
+                        np.repeat(np.array([[1,1]]), obstacle_square_unit),
+                        np.repeat(np.array([[0,1]]), obstacle_square_unit)],
+
+            [np.repeat(np.array([[0,1]]), obstacle_square_unit),
+                        np.repeat(np.array([[1,1]]), obstacle_square_unit),
+                        np.repeat(np.array([[0,1]]), obstacle_square_unit)]
+                
+                ]
 
     coverage = 0
 
