@@ -65,7 +65,7 @@ def show_obstacle_field(environment):
 
 
 
-def create_obstacle_field(environment, goal_coverage, obstacle_square_unit = 1) -> Tuple[np.ndarray, float]:
+def create_obstacle_field(environment: np.array, goal_coverage: float, obstacle_square_unit: int = 1) -> Tuple[np.ndarray, float]:
 
     """
     Arguments:  
@@ -78,41 +78,60 @@ def create_obstacle_field(environment, goal_coverage, obstacle_square_unit = 1) 
 
  # TODO this isn't expanding the tetrominoes in the heighth
 
-    if obstacle_square_unit > 1: 
+
+    if obstacle_square_unit == 1: 
         tetrominoes = [
             
                 np.ones((4,1)), 
-                np.array([[1,1],
-                            [0,1]
-                            [0,1]]),
-
-                np.array([  [1,0]
-                            [1,1]
-                            [0,1]]),
-
-                np.array([  [0,1],
+                np.array([
                             [1,1],
-                            [0,1]])
+                            [0,1],
+                            [0,1]
+                        ]),
+
+                np.array([  
+                            [1,0],
+                            [1,1],
+                            [0,1]
+                        ]),
+
+                np.array([  
+                            [0,1],
+                            [1,1],
+                            [0,1]
+                        ])
                     
                     ]
     else: 
             tetro_1 = np.ones((4*obstacle_square_unit,1*obstacle_square_unit))
-            tetro_2 = 
-            tetro_3 = 
-            tetro_4 = 
-            tetrominoes = [tetro_1, 
-            [np.repeat(np.array([[1,1]]), obstacle_square_unit),
-                        np.repeat(np.array([[0,1]]), obstacle_square_unit),
-                        np.repeat(np.array([[0,1]]), obstacle_square_unit)], 
-            [np.repeat(np.array([[1,0]]), obstacle_square_unit),
-                        np.repeat(np.array([[1,1]]), obstacle_square_unit),
-                        np.repeat(np.array([[0,1]]), obstacle_square_unit)],
-
-            [np.repeat(np.array([[0,1]]), obstacle_square_unit),
-                        np.repeat(np.array([[1,1]]), obstacle_square_unit),
-                        np.repeat(np.array([[0,1]]), obstacle_square_unit)]
-                
-                ]
+            tetro_2 = np.repeat(np.repeat(
+                                    np.array([
+                                                [1,1],
+                                                [0,1],
+                                                [0,1]
+                                            ]), 
+                                        obstacle_square_unit, 0),
+                                obstacle_square_unit, 1)
+        
+            tetro_3 = np.repeat(np.repeat(
+                                    np.array([
+                                                [1,0],
+                                                [1,1],
+                                                [0,1]
+                                            ]), 
+                                        obstacle_square_unit, 0),
+                                obstacle_square_unit, 1)
+        
+            tetro_4 = np.repeat(np.repeat(
+                                    np.array([
+                                                [0,1],
+                                                [1,1],
+                                                [0,1]
+                                            ]), 
+                                        obstacle_square_unit, 0),
+                                obstacle_square_unit, 1)
+        
+            tetrominoes = [tetro_1, tetro_2, tetro_3, tetro_4]
 
     coverage = 0
 
