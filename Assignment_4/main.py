@@ -80,40 +80,40 @@ def loadObstacles(desktop: bool, filename: str):
 
     return obstacle_x, obstacle_y, open_x, open_y, obstacles
 
-def prm(rng=None):
+# def prm(rng=None):
 
-    print(__file__ + " start!!")
-    show_animation = True
-    # start and goal position
-    sx = 10.0  # [m]
-    sy = 10.0  # [m]
-    gx = 50.0  # [m]
-    gy = 50.0  # [m]
-    robot_size = 1.0  # [m]
+#     print(__file__ + " start!!")
+#     show_animation = True
+#     # start and goal position
+#     sx = 10.0  # [m]
+#     sy = 10.0  # [m]
+#     gx = 50.0  # [m]
+#     gy = 50.0  # [m]
+#     robot_size = 1.0  # [m]
 
-    ox = obstacle_x
-    oy = obstacle_y
+#     ox = obstacle_x
+#     oy = obstacle_y
 
-    if show_animation:
-        plt.plot(ox, oy, ".k")
-        plt.plot(sx, sy, "^r")
-        plt.plot(gx, gy, "^c")
-        plt.grid(True)
-        plt.axis("equal")
+#     if show_animation:
+#         plt.plot(ox, oy, ".k")
+#         plt.plot(sx, sy, "^r")
+#         plt.plot(gx, gy, "^c")
+#         plt.grid(True)
+#         plt.axis("equal")
 
-    rx, ry = prm.prm_planning(sx, sy, gx, gy, ox, oy, robot_size)
+#     rx, ry = prm.prm_planning(sx, sy, gx, gy, ox, oy, robot_size)
 
-    assert rx, 'Cannot found path'
+#     assert rx, 'Cannot find path'
 
-    if True:
-        plt.plot(rx, ry, "-r")
-        plt.pause(0.001)
-        plt.show()
+#     if True:
+#         plt.plot(rx, ry, "-r")
+#         plt.pause(0.001)
+#         plt.show()
 
 
 
 def main(): 
-    obstacle_x, obstacle_y, open_x, open_y, obstacles = loadObstacles(True, r"\10_coverage.npy")
+    obstacle_x, obstacle_y, open_x, open_y, obstacles = loadObstacles(desktop = False, filename = r"\10_coverage.npy")
     t = 0
     burning = []  # obstacle to be extinguished, goal points for the fire truck
     burnable = [] #obstacles that aren't burning or can be relit, goal points for the wumpus -- 
@@ -143,9 +143,10 @@ def main():
 
 # Wumpus 
         if wumpusPlanning: 
+            print("Wumpus is planning...")
             wumpusPlanning = True
             wumpus.path_x, wumpus.path_y = wumpus.plan(obstacle_x, obstacle_y, 10, 10, obstacle_x[random_number], obstacle_y[random_number])
-            if wumpus.goal_found:
+            if wumpus.path_x:
                 wumpusPlanning = False
         else:
             wumpus.move(wumpus.path_x, wumpus.path_y)
@@ -153,6 +154,7 @@ def main():
 
 # Firetruck
         if firetruckPlanning:
+            print("Firetruck is planning...")
             firetruckPlanning = True
             firetruck.path_x, firetruck.path_y = firetruck.plan(obstacle_x, obstacle_y, 225, 225, burning[0][0], burning[0][1])
 
@@ -163,14 +165,19 @@ def main():
             # fire truck is moving
         else:
             firetruck.move(firetruck.path_x, firetruck.path_y)           
-            stops for 5 seconds
-            any states within 10m are extinguished
+            # stops for 5 seconds
+            # any states within 10m are extinguished
             firetruckPlanning = True
             wumpus.plan()
 
-        plt.plot(ox, oy, ".k")
-        plt.plot(sx, sy, "^r")
-        plt.plot(gx, gy, "^c")
+
+
+        plt.plot(list(zip(*intact))[0], list(zip(*intact))[1], ".k")
+        plt.plot(list(zip(*burning))[0], list(zip(*burning))[1], ".r")
+        plt.plot(list(zip(*extinguished))[0], list(zip(*extinguished))[1], ".b")  
+
+        # plt.plot(sx, sy, "^r")
+        # plt.plot(gx, gy, "^c")
         plt.grid(True)
 
 
