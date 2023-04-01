@@ -80,38 +80,6 @@ def loadObstacles(desktop: bool, filename: str):
 
     return obstacle_x, obstacle_y, open_x, open_y, obstacles
 
-# def prm(rng=None):
-
-#     print(__file__ + " start!!")
-#     show_animation = True
-#     # start and goal position
-#     sx = 10.0  # [m]
-#     sy = 10.0  # [m]
-#     gx = 50.0  # [m]
-#     gy = 50.0  # [m]
-#     robot_size = 1.0  # [m]
-
-#     ox = obstacle_x
-#     oy = obstacle_y
-
-#     if show_animation:
-#         plt.plot(ox, oy, ".k")
-#         plt.plot(sx, sy, "^r")
-#         plt.plot(gx, gy, "^c")
-#         plt.grid(True)
-#         plt.axis("equal")
-
-#     rx, ry = prm.prm_planning(sx, sy, gx, gy, ox, oy, robot_size)
-
-#     assert rx, 'Cannot find path'
-
-#     if True:
-#         plt.plot(rx, ry, "-r")
-#         plt.pause(0.001)
-#         plt.show()
-
-
-
 def main(): 
     obstacle_x, obstacle_y, open_x, open_y, obstacles = loadObstacles(desktop = False, filename = r"\10_coverage.npy")
     t = 0
@@ -119,46 +87,68 @@ def main():
     burnable = [] #obstacles that aren't burning or can be relit, goal points for the wumpus -- 
     extinguished = []
     intact = [] 
+    # obstacle_xys = []
 
     for x,y in zip(obstacle_x, obstacle_y):
         intact.append((x,y))
         burnable.append((x,y))
+        # obstacle_xys.append((x,y))
     
+    def burning(x,y):
+        burning.append((x,y))
+        intact.remove((x,y))
+        burnable.remove((x,y))
+    
+    def extinguished(x,y):
+        extinguished.append((x,y))
+        burning.remove((x,y))
+        burnable.append((x,y))
+
 
 
     wumpus = Wumpus()
     firetruck = Firetruck()
+    final_wumpus_path_x = []
+    final_wumpus_path_y = []
+    final_firetruck_path_x = []
+    final_firetruck_path_y = []
+
+    wumpusStart = (10,10)
+    firetruckStart = (225,225)
 
     wumpusPlanning = True
     firetruckPlanning = True
-    wumpusMoving = False
-    firetruckMoving = False
+    
     # fire truck does prm initial planning
     
-    random_number = randint(0, len(obstacle_x))
+
 
     while t < 3600: 
+        random_number = randint(0, len(obstacle_x))
         t += 1
 
-
+# TODO need to figure out how to implement state transitions from burning to extinguished and etc. 
 # Wumpus 
         if wumpusPlanning: 
             print("Wumpus is planning...")
             wumpusPlanning = True
-            wumpus.path_x, wumpus.path_y = wumpus.plan(obstacle_x, obstacle_y, 10, 10, obstacle_x[random_number], obstacle_y[random_number])
+            # wumpus picks a goal based on what is in the burnable list
+            wumpus.path_x, wumpus.path_y = wumpus.plan(obstacle_x, obstacle_y, wumpusStart[0], wumpusStart[1], burnable[random_number][0], burnable[random_number][1])
             if wumpus.path_x:
-                wumpusPlanning = False
-        else:
-            wumpus.move(wumpus.path_x, wumpus.path_y)
-            wumpusPlanning = True
+                # if a path has been found, we're going to add the path to the final path, add the obstacle to the `burning` list and remove from the obstacle_xys list
+                final_wumpus_path_x.append(wumpus.path_x)
+                final_wumpus_path_y.append(wumpus.path_y)
+                burning(burnable[random_number][0], burnable[random_number][1])
 
 # Firetruck
         if firetruckPlanning:
             print("Firetruck is planning...")
             firetruckPlanning = True
-            firetruck.path_x, firetruck.path_y = firetruck.plan(obstacle_x, obstacle_y, 225, 225, burning[0][0], burning[0][1])
+            firetruck.path_x, firetruck.path_y = firetruck.plan(obstacle_x, obstacle_y, firetruckStart[0], firetruckStart[1], burning[0][0], burning[0][1])
 
             if firetruck.path_x: 
+                final_firetruck_path_x.append(firetruck.path_x)
+                final_firetruck_path_y.append(firetruck.path_y)
                 firetruckPlanning = False
             else: 
                 print("Path not found")
@@ -179,27 +169,28 @@ def main():
         # plt.plot(sx, sy, "^r")
         # plt.plot(gx, gy, "^c")
         plt.grid(True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         plt.axis("equal")
+
+
+
+
+
+
+
+def add_to_burning():
+    burning.append((x,y))
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
