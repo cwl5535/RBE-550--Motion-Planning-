@@ -10,16 +10,48 @@ class Firetruck():
         self.x = sx
         self.y = sy
 
-        path_x, path_y = prm_planning(sx, sy, gx, gy, ox, oy, robot_size = 5)
+        path_x, path_y = prm_planning(sx, sy, gx, gy, ox, oy, robot_radius = 1)
 
-        assert path_x, "Cannot find path"
+        alert = f"Cannot find path between {(sx, sy)} and {gx, gy}"
+        
+        try:
+            assert path_x, alert
+        except: 
+            AssertionError
 
         return path_x, path_y
+    
+    def search_for_nearby_open(self, burning_obstacle: tuple, open_nodes:list) -> tuple:
+        # need to search for open spot adjacent to burning obstacle
+        x = burning_obstacle[0]
+        y = burning_obstacle[1]
+
+        radius = 5
+
+        north = (x, y+radius)
+        south = (x, y-radius)
+        east = (x+radius, y)
+        west = (x-radius, y)
+        northeast = (x+radius, y+radius)
+        southeast = (x+radius, y-radius)
+        southwest = (x-radius, y-radius)
+        northwest = (x-radius, y+radius)
+        # print(type(north))
+        directions = [north, south, east, west, northeast, northwest, southeast, southwest]
+
+        for direction in directions:
+            
+            if direction in open_nodes:
+                
+                return direction
+
+    
     
     def move(self,path_x, path_y):
         plt.plot(path_x, path_y, "-r")
         plt.pause(0.001)
         # plt.show()
+
 
 
 

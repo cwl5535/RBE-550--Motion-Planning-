@@ -16,7 +16,7 @@ N_SAMPLE = 500  # number of sample_points
 N_KNN = 10  # number of edge from one sampled point
 MAX_EDGE_LEN = 30.0  # [m] Maximum edge length
 
-show_animation = True
+show_animation = False
 
 
 class Node:
@@ -56,8 +56,8 @@ def prm_planning(start_x, start_y, goal_x, goal_y,
                                        robot_radius,
                                        obstacle_x_list, obstacle_y_list,
                                        obstacle_kd_tree, rng)
-    if show_animation:
-        plt.plot(sample_x, sample_y, ".b")
+    # if show_animation:
+        # plt.plot(sample_x, sample_y, ".b")
 
     road_map = generate_road_map(sample_x, sample_y,
                                  robot_radius, obstacle_kd_tree)
