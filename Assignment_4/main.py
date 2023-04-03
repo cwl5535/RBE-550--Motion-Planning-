@@ -9,9 +9,10 @@ from firetruck import Firetruck
 from random import randint
 from math import hypot
 import pickle
+import time
 
 # Creating an Obstacle Field 
-#############################################
+############################################
 
 # field_size = 250
 
@@ -20,10 +21,10 @@ import pickle
 #     goal_coverage = 0.1, 
 #     obstacle_square_unit= 5)
 
-# os.chdir(r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_4")
-# np.save("10_coverage3.npy", obstacle_field)
+# os.chdir(r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_4\Run_5")
+# np.save("10_coverage5.npy", obstacle_field)
 
-################################################################
+# ###############################################################
 
 
 # plt.figure("Assignment 4 (RBE 550): Firetruck vs. Wumpus")
@@ -82,7 +83,7 @@ def loadObstacles(desktop: bool, filename: str):
     return obstacle_x, obstacle_y, open_x, open_y, obstacles
 
 def main(): 
-    obstacle_x, obstacle_y, open_x, open_y, obstacles = loadObstacles(desktop = False, filename = r"\10_coverage.npy")
+    obstacle_x, obstacle_y, open_x, open_y, obstacles = loadObstacles(desktop = True, filename = r"\Run_3\10_coverage3.npy")
     t = 0
     burning = []  # obstacle to be extinguished, goal points for the fire truck
     burnable = [] #obstacles that aren't burning or can be relit, goal points for the wumpus -- 
@@ -135,6 +136,9 @@ def main():
     wumpus.start = (10,10)
     firetruck.start = (225,10)
 
+    total_wumpus_CPU_time = 0
+    total_firetruck_CPU_time = 0
+
     wumpus.planning = True
     firetruck.planning = True
     wumpus.waitingToPlan = False
@@ -147,7 +151,7 @@ def main():
     while t < 360: 
         random_number = randint(0, len(obstacle_x))
         print(f"t = {t}")
-        t += 1
+        
 
 
  
@@ -161,8 +165,11 @@ def main():
                 wumpus.waitingToPlan = False
                 print("Wumpus: I have burned everything!!!!!")
             # wumpus picks a goal based on what is in the burnable list
+            wump_start_time = time.time_ns()
             wumpus.path_x, wumpus.path_y = wumpus.plan(obstacle_x, obstacle_y, wumpus.start[0], wumpus.start[1],wumpus.goal_obstacle[0],wumpus.goal_obstacle[1])
-            
+            wump_end_time = time.time_ns()
+            dt_wumpus = wump_end_time - wump_start_time
+
             if wumpus.path_x:
                 print("Wumpus path found!")
                 # if a path has been found, we're going to add the path to the final path, add the obstacle to the `burning` list and remove from the obstacle_xys list
@@ -214,8 +221,14 @@ def main():
             # firetruck.goal_obstacle = firetruck.search_for_nearby_open(burning[0], open_goals)
             assert firetruck.goal_obstacle is not None
             print("Firetruck is planning...")
-            firetruck.path_x, firetruck.path_y = firetruck.plan(obstacle_x, obstacle_y, firetruck.start[0], firetruck.start[1], firetruck.goal_obstacle[0], firetruck.goal_obstacle[1])
 
+            firetruck_start_time = time.time_ns()
+            firetruck.path_x, firetruck.path_y = firetruck.plan(obstacle_x, obstacle_y, firetruck.start[0], firetruck.start[1], firetruck.goal_obstacle[0], firetruck.goal_obstacle[1])
+            
+            firetruck_end_time = time.time_ns()
+            dt_firetruck = firetruck_end_time - firetruck_start_time
+            
+            
             if firetruck.path_x: 
                 print("Firetruck path found!")
                 firetruck.finalpath_x.append(firetruck.path_x)
@@ -246,18 +259,29 @@ def main():
                 firetruck.extinguishing = False
                 firetruck.planning = True
 
-
+        
         intact_sim.append(intact)
         burning_sim.append(burning)
         extinguished_sim.append(extinguished)
         burned_sim.append(burned)
 
+        total_wumpus_CPU_time += dt_wumpus
+        total_firetruck_CPU_time += dt_firetruck
+
         # if intact: 
-        #     plt.plot(list(zip(*intact))[0], list(zip(*intact))[1], ".k")
+        #     plt.plot(list(zip(*intact))[0], list(zip(*intact))[0], ".g")
         # if burning:
-        #     plt.plot(list(zip(*burning))[0], list(zip(*burning))[1], ".r")
+        #     plt.plot(list(zip(*burning))[0], list(zip(*burning))[0], ".r")
         # if extinguished: 
-        #     plt.plot(list(zip(*extinguished))[0], list(zip(*extinguished))[1], ".b")  
+        #     plt.plot(list(zip(*extinguished))[0], list(zip(*extinguished))[0], ".b")  
+        # if burned:
+        #     plt.plot(list(zip(*burned))[0], list(zip(*burned))[0], ".k")
+
+        # plt.pause(0.001)
+        # plt.show()
+        # plt.pause(0.001)
+        
+        t += 1
 
         # plt.plot(sx, sy, "^r")
         # plt.plot(gx, gy, "^c")
@@ -288,14 +312,16 @@ def main():
     t
     
     """
-
-    with open("simulation_variables.txt", "wb") as s: 
+    os.chdir(r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_4\Run_3")
+    with open("CPU_times_run3.txt", "wb") as c:
+        pickle.dump([total_wumpus_CPU_time, total_firetruck_CPU_time, np.arange(0, t)], c)
+    with open("simulation_variables_run3.txt", "wb") as s: 
         pickle.dump([intact_sim, burning_sim, burned_sim, extinguished_sim, t],s)
 
-    with open("wumpus_path.txt", "wb") as w: 
+    with open("wumpus_path_run3.txt", "wb") as w: 
         pickle.dump([wumpus.finalpath_x, wumpus.finalpath_y], w)
 
-    with open("firetruck_path.txt", "wb") as f: 
+    with open("firetruck_path_run3.txt", "wb") as f: 
         pickle.dump([firetruck.finalpath_x, firetruck.finalpath_y], f)
 
     # plt.grid(True)
