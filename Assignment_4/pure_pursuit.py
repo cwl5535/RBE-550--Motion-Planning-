@@ -129,7 +129,7 @@ def pure_pursuit_steer_control(state, trajectory, pind):
     return delta, ind
 
 
-def plot_arrow(x, y, yaw, length=1.0, width=0.5, fc="r", ec="k"):
+def plot_arrow(x, y, yaw, length=2.0, width=4.0, fc="k", ec="k"):
     """
     Plot arrow
     """
