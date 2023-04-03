@@ -167,13 +167,13 @@ def dijkstra_planning(sx, sy, gx, gy, road_map, sample_x, sample_y):
         current = open_set[c_id]
 
         # show graph
-        if show_animation and len(closed_set.keys()) % 2 == 0:
-            # for stopping simulation with the esc key.
-            plt.gcf().canvas.mpl_connect(
-                'key_release_event',
-                lambda event: [exit(0) if event.key == 'escape' else None])
-            plt.plot(current.x, current.y, "xg")
-            plt.pause(0.001)
+        # if show_animation and len(closed_set.keys()) % 2 == 0:
+        #     # for stopping simulation with the esc key.
+        #     plt.gcf().canvas.mpl_connect(
+        #         'key_release_event',
+        #         lambda event: [exit(0) if event.key == 'escape' else None])
+        #     plt.plot(current.x, current.y, "xg")
+        #     plt.pause(0.001)
 
         if c_id == (len(road_map) - 1):
             print("goal is found!")

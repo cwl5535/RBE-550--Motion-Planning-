@@ -8,6 +8,7 @@ from wumpus import Wumpus
 from firetruck import Firetruck
 from random import randint
 from math import hypot
+import pickle
 
 # Creating an Obstacle Field 
 #############################################
@@ -86,12 +87,14 @@ def main():
     burning = []  # obstacle to be extinguished, goal points for the fire truck
     burnable = [] #obstacles that aren't burning or can be relit, goal points for the wumpus -- 
     extinguished = []
+    burned = []
     intact = [] 
     open_goals = []
 
     intact_sim = []
     burning_sim = []
     extinguished_sim = []
+    burned_sim = []
 
 
     for x,y in zip(obstacle_x, obstacle_y):
@@ -106,14 +109,18 @@ def main():
             return True
         return False
 
-    def add_to_burning(x,y):
-        burning.append((x,y,))# t))
+    def add_to_burning(x,y,t):
+        burning.append((x,y,t))
         intact.remove((x,y))
         burnable.remove((x,y))
+
+    def add_to_burned(x,y,t):
+        burned.append((x,y))
+        burning.remove((x,y,t))
     
-    def add_to_extinguished(x,y):
+    def add_to_extinguished(x,y,t):
         extinguished.append((x,y))
-        burning.remove((x,y))
+        burning.remove((x,y,t))
         burnable.append((x,y))
 
 
@@ -137,16 +144,22 @@ def main():
     
 
 
-    while t < 250: 
+    while t < 360: 
         random_number = randint(0, len(obstacle_x))
         print(f"t = {t}")
         t += 1
+
 
  
 # Wumpus 
         if wumpus.planning: 
             print("Wumpus is planning...")
-            wumpus.goal_obstacle = burnable[random_number]
+            try:
+                wumpus.goal_obstacle = burnable[random_number]
+            except IndexError:
+                wumpus.planning = False
+                wumpus.waitingToPlan = False
+                print("Wumpus: I have burned everything!!!!!")
             # wumpus picks a goal based on what is in the burnable list
             wumpus.path_x, wumpus.path_y = wumpus.plan(obstacle_x, obstacle_y, wumpus.start[0], wumpus.start[1],wumpus.goal_obstacle[0],wumpus.goal_obstacle[1])
             
@@ -155,7 +168,7 @@ def main():
                 # if a path has been found, we're going to add the path to the final path, add the obstacle to the `burning` list and remove from the obstacle_xys list
                 wumpus.finalpath_x.append(wumpus.path_x)
                 wumpus.finalpath_y.append(wumpus.path_y)
-                add_to_burning(wumpus.goal_obstacle[0], wumpus.goal_obstacle[1])  # set obstacle to burning
+                add_to_burning(wumpus.goal_obstacle[0], wumpus.goal_obstacle[1], t)  # set obstacle to burning
                 wumpus.planning = False
                 wumpus.waitingToPlan = True
                 wumpus.waitCounter = 0
@@ -170,22 +183,34 @@ def main():
             if wumpus.waitCounter == 10:
                 for obstacle in burnable:
                     if within_radius(30, (wumpus.goal_obstacle[0],wumpus.goal_obstacle[1]), obstacle):
-                        add_to_burning(obstacle[0], obstacle[1])
+                        add_to_burning(obstacle[0], obstacle[1], t)
             elif wumpus.waitCounter == len(wumpus.path_x):   # wumpus will wait to begin another plan for as long as it would take it to move, assuming each timestep to move, t, is one iteration
                 wumpus.waitingToPlan = False
                 wumpus.planning = True
 
+# time check to see if burning obstacles have completely burned
+        for b in burning: 
+            if abs(t - b[2]) >= 25: 
+                add_to_burned(b[0], b[1], b[2])
+
+
 # Firetruck
         # burning = [(x,y) for x,y in zip(range(50), range(50))]
-        if len(burning) > 1:
-            random_burning_number = randint(0, len(burning))
-        else: 
-            random_burning_number = 0
+
 
         if firetruck.planning:
+            if len(burning) > 1:
+                random_burning_number = randint(0, len(burning))
+                firetruck.goal_obstacle = firetruck.search_for_nearby_open(burning[random_burning_number], open_goals)
+            else: # no items are burning
+                random_burning_number = 0
+                firetruck.goal_obstacle = (wumpus.x, wumpus.y) # hunt for the wumpus
+
             print(f"random burning number = {random_burning_number}")
             print(f"burning is {len(burning)} elements long")
-            firetruck.goal_obstacle = firetruck.search_for_nearby_open(burning[random_burning_number], open_goals)
+            print(f"burned is {len(burned)} elements long") 
+              
+
             # firetruck.goal_obstacle = firetruck.search_for_nearby_open(burning[0], open_goals)
             assert firetruck.goal_obstacle is not None
             print("Firetruck is planning...")
@@ -216,7 +241,7 @@ def main():
             if firetruck.extCounter == 5:  # if the firetruck waits for 5 seconds, obstacles within 10 m will be extinguished
                 for burning_obstacle in burning:
                     if within_radius(10, firetruck.goal_obstacle, burning_obstacle):
-                        add_to_extinguished(burning_obstacle[0], burning_obstacle[1])
+                        add_to_extinguished(burning_obstacle[0], burning_obstacle[1], burning_obstacle[2])
                 
                 firetruck.extinguishing = False
                 firetruck.planning = True
@@ -225,6 +250,7 @@ def main():
         intact_sim.append(intact)
         burning_sim.append(burning)
         extinguished_sim.append(extinguished)
+        burned_sim.append(burned)
 
         # if intact: 
         #     plt.plot(list(zip(*intact))[0], list(zip(*intact))[1], ".k")
@@ -238,18 +264,44 @@ def main():
         # plt.grid(True)
         # plt.axis("equal")
         # plt.show()
+    
+    # each sim list is a list of lists of tuples 
 
-    if intact_sim: 
-        plt.plot(list(zip(*intact_sim))[0], list(zip(*intact_sim))[1], ".k")
-    if burning_sim:
-        plt.plot(list(zip(*burning_sim))[0], list(zip(*burning_sim))[1], ".r")
-    if extinguished_sim: 
-        plt.plot(list(zip(*extinguished_sim))[0], list(zip(*extinguished_sim))[1], ".b") 
-            
-    plt.grid(True)
-    plt.axis("equal")
-    plt.pause(0.001)
-    plt.show()
+    # if intact_sim: 
+    #     plt.plot(list(zip(*intact_sim))[0], list(zip(*intact_sim))[1], ".k")
+    # if burning_sim:
+    #     plt.plot(list(zip(*burning_sim))[0], list(zip(*burning_sim))[1], ".r")
+    # if extinguished_sim: 
+    #     plt.plot(list(zip(*extinguished_sim))[0], list(zip(*extinguished_sim))[1], ".b") 
+
+
+    # Saving Variables
+    """
+    wumpus.finalpath_x
+    wumpus.finalpath_y
+    firetruck.finalpath_x
+    firetruck.finalpath_y
+    intact_sim
+    burning_sim
+    burned_sim
+    extinguished_sim
+    t
+    
+    """
+
+    with open("simulation_variables.txt", "wb") as s: 
+        pickle.dump([intact_sim, burning_sim, burned_sim, extinguished_sim, t],s)
+
+    with open("wumpus_path.txt", "wb") as w: 
+        pickle.dump([wumpus.finalpath_x, wumpus.finalpath_y], w)
+
+    with open("firetruck_path.txt", "wb") as f: 
+        pickle.dump([firetruck.finalpath_x, firetruck.finalpath_y], f)
+
+    # plt.grid(True)
+    # plt.axis("equal")
+    # plt.pause(0.001)
+    # plt.show()
 
 
 
