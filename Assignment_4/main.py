@@ -83,7 +83,7 @@ def loadObstacles(desktop: bool, filename: str):
     return obstacle_x, obstacle_y, open_x, open_y, obstacles
 
 def main(): 
-    obstacle_x, obstacle_y, open_x, open_y, obstacles = loadObstacles(desktop = True, filename = r"\Run_3\10_coverage3.npy")
+    obstacle_x, obstacle_y, open_x, open_y, obstacles = loadObstacles(desktop = True, filename = r"\Run_5\10_coverage5.npy")
     t = 0
     burning = []  # obstacle to be extinguished, goal points for the fire truck
     burnable = [] #obstacles that aren't burning or can be relit, goal points for the wumpus -- 
@@ -164,6 +164,7 @@ def main():
                 wumpus.planning = False
                 wumpus.waitingToPlan = False
                 print("Wumpus: I have burned everything!!!!!")
+                continue
             # wumpus picks a goal based on what is in the burnable list
             wump_start_time = time.time_ns()
             wumpus.path_x, wumpus.path_y = wumpus.plan(obstacle_x, obstacle_y, wumpus.start[0], wumpus.start[1],wumpus.goal_obstacle[0],wumpus.goal_obstacle[1])
@@ -312,16 +313,16 @@ def main():
     t
     
     """
-    os.chdir(r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_4\Run_3")
-    with open("CPU_times_run3.txt", "wb") as c:
+    os.chdir(r"C:\Users\layhu\Desktop\RBE-550--Motion-Planning-\Assignment_4\Run_5")
+    with open("CPU_times_run5.txt", "wb") as c:
         pickle.dump([total_wumpus_CPU_time, total_firetruck_CPU_time, np.arange(0, t)], c)
-    with open("simulation_variables_run3.txt", "wb") as s: 
+    with open("simulation_variables_run5.txt", "wb") as s: 
         pickle.dump([intact_sim, burning_sim, burned_sim, extinguished_sim, t],s)
 
-    with open("wumpus_path_run3.txt", "wb") as w: 
+    with open("wumpus_path_run5.txt", "wb") as w: 
         pickle.dump([wumpus.finalpath_x, wumpus.finalpath_y], w)
 
-    with open("firetruck_path_run3.txt", "wb") as f: 
+    with open("firetruck_path_run5.txt", "wb") as f: 
         pickle.dump([firetruck.finalpath_x, firetruck.finalpath_y], f)
 
     # plt.grid(True)
