@@ -80,13 +80,14 @@ class Wumpus():
             states.append(time, state)
 
             if show_animation:  # pragma: no cover
-                plt.cla()
+                # plt.cla()
                 # for stopping simulation with the esc key.
                 plt.gcf().canvas.mpl_connect(
                     'key_release_event',
                     lambda event: [exit(0) if event.key == 'escape' else None])
                 plot_arrow(state.x, state.y, state.yaw)
                 plt.plot(cx, cy, "-r", label="course")
+                # plt.plot()
                 # plt.plot(states.x, states.y, "-b", label="trajectory")
                 # plt.plot(cx[target_ind], cy[target_ind], "xg", label="target")
                 # plt.axis("equal")

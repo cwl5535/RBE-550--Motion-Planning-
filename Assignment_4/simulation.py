@@ -21,12 +21,13 @@ with open('firetruck_path.txt', 'rb') as f:
     firetruck.finalpath_x, firetruck.finalpath_y = pickle.load(f)
 # each sim list is a list of Lists that contains a coordinate of an onstacle 
 
-
+# print(intact_sim[0])
 # print(len(wumpus.finalpath_y[0]))
+print((extinguished_sim[0]))
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    t = list(range(360))
+#     t = list(range(360))
 #     # for i in range(360):
 #     #     print(i)
 #     #     plt.plot(*intact_sim[i])
@@ -35,16 +36,18 @@ if __name__ == "__main__":
 #     #     plt.plot(*burned_sim[i])
 
 
-    for x,y,t in zip(wumpus.finalpath_x, wumpus.finalpath_y, t):
-        x.sort(), y.sort()
-        print(t)
-        plt.plot(*intact_sim[t], ".g", label="intact")
-        plt.plot(*burning_sim[t], ".r", label="burning")
-        plt.plot(*extinguished_sim[t], ".g", label="extinguished")  
-        plt.plot(*burned_sim[t], ".k", label="burned")
-        wumpus.move(x,y)
+    # for x, y, intact, burned, extinguished, burning, t in zip(wumpus.finalpath_x, wunmpus.finalpath_y, intact_sim, burned_sim, extinguished_sim, burning_sim,  t):
+    #     x.sort(), y.sort()
+    #     print(t)
+    #     # plt.cla()
+    #     plt.plot(intact[t][0], intact[t][1], ".g", label="intact")
+    #     plt.plot(burning[t][0], burning[t][1], ".r", label="burning")
+    #     plt.plot(extinguished[t][0], extinguished[t][1], ".g", label="extinguished")  
+    #     plt.plot(burned[t][0], burned[t][1], ".k", label="burned")
+    #     # wumpus.move(x,y)
 
 
-    plt.show()
+
+    # plt.show()
 
 
